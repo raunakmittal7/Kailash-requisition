@@ -1,0 +1,9 @@
+{
+  "name": "kailash-requisition",
+  "private": true,
+  "description": "Kailasha Group material requisition website. Static page plus one server function (api/read.js) for reading slips and quotes.",
+  "engines": { "node": ">=20" },
+  "dependencies": {
+    "@anthropic-ai/sdk": "1.14.0"
+  }
+}

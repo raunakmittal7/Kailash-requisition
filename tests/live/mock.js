@@ -79,6 +79,11 @@ http.createServer(async (req, res) => {
       if (files[k]) { res.writeHead(200, { 'content-type': 'image/jpeg' }); return res.end(files[k]); }
       return send(res, 404, {});
     }
+    if (p === '/api/read') { // the Vercel function, run in-process
+      const raw = req.method === 'POST' ? (await body(req)).toString() : '';
+      req.body = raw ? JSON.parse(raw) : undefined;
+      return require(path.join(ROOT, 'api', 'read.js'))(req, res);
+    }
     if (p === '/config.js') { res.writeHead(200, { 'content-type': 'text/javascript' }); return res.end(`window.KG_CONFIG={url:'http://localhost:${PORT}',key:'sb_publishable_test',loginDomain:'@phone.kailasha.local'}`); }
     const f = path.join(ROOT, p === '/' ? 'index.html' : p);
     if (!f.startsWith(ROOT) || !fs.existsSync(f)) return send(res, 404, {});

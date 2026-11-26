@@ -259,10 +259,17 @@ const hasHi=t=>/[ऀ-ॿ]/.test(t||'');
 const T={home:['Home','होम'],newreq:['New requisition','नई मांग'],reqs:['Requisitions','मांग सूची'],pos:['Purchase orders','खरीद आदेश'],stock:['Stock','स्टॉक'],vendors:['Vendors','विक्रेता'],contracts:['Rate contracts','रेट कॉन्ट्रैक्ट'],reports:['Reports','रिपोर्ट'],audit:['Activity log','गतिविधि'],outbox:['WhatsApp outbox','WhatsApp'],settings:['Settings','सेटिंग'],
 item:['Item name','सामान का नाम'],slipTitle:['Have a handwritten slip?','हाथ से लिखी पर्ची है?'],slipHint:['Take a photo of it. The items are filled in below for you to check. The photo is not saved.','उसकी फोटो लें। सामान नीचे अपने आप भर जाएगा, भेजने से पहले जांच लें। फोटो सेव नहीं होती।'],slipCam:['Take photo','फोटो लें'],slipUp:['Upload photo or PDF','फोटो या PDF चुनें'],pickItem:['Tap to choose from your list, or type a new item','सूची से चुनें या नया सामान लिखें'],qty:['Quantity','मात्रा'],unit:['Unit','इकाई'],subunit:['Sub-unit (optional)','उप-इकाई (वैकल्पिक)'],category:['Category','श्रेणी'],brand:['Suggested brand','सुझाया ब्रांड'],spec:['Specification (optional)','विवरण (वैकल्पिक)'],photo:['Photo (optional)','फोटो (वैकल्पिक)'],area:['Area of usage','उपयोग की जगह'],entire:['Entire project','पूरा प्रोजेक्ट'],specific:['Specific area','खास जगह'],areaName:['Area name','जगह का नाम'],areaDesc:['What it will be used for','किस काम के लिए'],deadline:['Needed by','कब तक चाहिए'],addItem:['Add another item','और सामान जोड़ें'],submit:['Send requisition','मांग भेजें'],urgent:['Mark urgent (WhatsApp nudge)','जल्दी करें (WhatsApp)'],remove:['Remove','हटाएं'],withWho:['Pending with','किसके पास'],mine:['Your site’s requisitions','आपकी साइट की मांगें'],waiting:['Waiting for you','आपके लिए बाकी'],expected:['Material expected','आने वाला सामान']};
 
-/* Claude reads vendor quotations (only inside the Claude viewer) */
+/* Claude reads slips, quotations and price lists through the website's own server (api/read.js) */
 let SAMPLE=null,SAMPLE_IMG=false,SAMPLE_LIM=5,DL=null;
 DL={save:async({filename,data})=>{const u=URL.createObjectURL(new Blob([data]));const a=document.createElement('a');a.href=u;a.download=filename;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(u),4000)}};
-(async()=>{try{SAMPLE=(await window.claude?.use?.('sample'))||null;if(SAMPLE){const l=await SAMPLE.limits().catch(()=>null);SAMPLE_IMG=!!l?.images;SAMPLE_LIM=l?.images?.maxCount||5}}catch(e){SAMPLE=null}})();
+const b64Of=b=>new Promise((ok,no)=>{const r=new FileReader();r.onload=()=>ok(String(r.result).split(',')[1]||'');r.onerror=()=>no({code:'image_rejected'});r.readAsDataURL(b)});
+const SERVER_READ={limits:async()=>({images:{maxCount:5}}),async json(prompt,{images}={}){
+  const imgs=[];let total=0;
+  for(const b of (images||[]).slice(0,5)){const small=(b.size>700000||!/^image\/(jpeg|png|webp)$/.test(b.type))?(await shrinkImg(b,1600,.8)).blob:b;const data=await b64Of(small);if(total+data.length>3800000)break;total+=data.length;imgs.push({type:small.type||'image/jpeg',data})}
+  const t=(await SB.auth.getSession()).data.session?.access_token||'';let r;
+  try{r=await fetch('/api/read',{method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer '+t},body:JSON.stringify({prompt,images:imgs})})}catch(e){throw {code:'network'}}
+  const j=await r.json().catch(()=>({}));if(!r.ok||!j.result)throw {code:j.error||(r.status===413?'too_big':'failed')};return j.result}};
+(async()=>{try{const r=await fetch('/api/read',{cache:'no-store'});const j=await r.json();if(j?.ready){SAMPLE=SERVER_READ;SAMPLE_IMG=true;SAMPLE_LIM=5}}catch(e){SAMPLE=null}})();
 
 /* ---------- state ---------- */
 let S=null;
@@ -466,9 +473,6 @@ function newReqView(){
     </div>
    </div>`).join('');
   return `<div class="head"><div><h1>${t('newreq')}</h1><p class="muted">${esc(site(sc).name)} · number is given when you send</p></div></div>
-  <div class="box slipbox"><div><h3>${t('slipTitle')}</h3><p class="small muted">${t('slipHint')}</p></div>
-    <div class="actions"><label class="btn primary" for="slipcam">${t('slipCam')}</label><input id="slipcam" class="vh" type="file" accept="image/*" capture="environment" onchange="A.slip(this)"><label class="btn" for="slipup">${t('slipUp')}</label><input id="slipup" class="vh" type="file" accept="image/*,application/pdf" multiple onchange="A.slip(this)"></div>
-    <div id="slipst" class="${tmp.slipMsg?.cls||''}" ${tmp.slipMsg?'':'hidden'}>${tmp.slipMsg?.html||''}</div></div>
   <div class="box"><label style="max-width:260px">${t('deadline')}<input type="date" value="${draft.deadline}" onchange="draft.deadline=this.value"></label></div>
   ${items}
   <div class="actions"><button class="btn" onclick="A.dAdd()">+ ${t('addItem')}</button><span style="flex:1"></span><button class="btn primary" onclick="A.submit()">${t('submit')}</button></div>
@@ -729,11 +733,11 @@ Also: needed_by as YYYY-MM-DD if a date is written (assume year ${YEAR}), else "
 
 Reply with JSON only, in this shape:
 {"needed_by":"","items":[{"slip_text":"","list_name":null,"name":"","qty":0,"unit":"","sub_unit":"","category":"","brand":"","spec":"","area":"","sure":true}],"notes":""}`}
-const slipErr=e=>({not_granted:'Reading was not allowed, so please fill the items by hand.',rate_limited:'Too many readings just now. Wait a minute and try again.',image_rejected:'That picture could not be read. Take a clearer photo in good light.',lib:'Could not open the PDF reader. Check the internet connection.'})[e?.code]||'Could not read the slip. Please try a clearer photo, or fill the items by hand.';
+const slipErr=e=>({not_configured:'Reading handwritten slips by photo is coming soon. For now, please fill the items by hand.',network:'No internet connection. Check it and try again, or fill the items by hand.',too_big:'The photos are too large. Send fewer pages at a time.',not_granted:'Reading was not allowed, so please fill the items by hand.',rate_limited:'Too many readings just now. Wait a minute and try again.',image_rejected:'That picture could not be read. Take a clearer photo in good light.',lib:'Could not open the PDF reader. Check the internet connection.'})[e?.code]||'Could not read the slip. Please try a clearer photo, or fill the items by hand.';
 A.slip=async input=>{
   const files=[...(input.files||[])];input.value='';if(!files.length)return;
   const st=document.getElementById('slipst'),sc=me().site;st.hidden=false;
-  if(!SAMPLE||!SAMPLE_IMG){st.className='note';st.textContent='Reading slips is not available in this view. Please fill the items by hand.';return}
+  if(!SAMPLE||!SAMPLE_IMG){st.className='note';st.textContent='Reading handwritten slips by photo is coming soon. For now, please fill the items by hand.';return}
   else{st.className='note info';st.textContent='Reading the slip. This usually takes 20 to 60 seconds…'}
   try{
     const send=[];
@@ -902,7 +906,7 @@ sure = true only if size and type clearly match.
 Reply with JSON only: {"matches":[{"item_id":"","list_id":"","row":0,"factor":1,"sure":true}]}`);
       (res?.matches||[]).forEach(m=>{const l=lists.find(x=>x.id===m.list_id),it=todo.find(x=>x.id===m.item_id);if(l&&it&&l.rows[+m.row])S.contractMap[l.id+'|'+normTxt(it.name)]={row:+m.row,factor:+m.factor>0?+m.factor:1,sure:m.sure===true}})}
     catch(e){toast(qErrCopy(e))}}
-  else if(todo.length&&!SAMPLE)toast('Automatic matching is not available in this view');
+  else if(todo.length&&!SAMPLE)toast('Automatic matching with price lists is coming soon');
   const n=refreshContractQuotes(r);log('Checked rate contracts'+(n?`: added ${n} contract price list${n>1?'s':''} to the comparison`:''),r.no);render();toast(n?'Contract prices added to the comparison':'No contract matches found')};
 
 function contractsView(){
@@ -939,7 +943,7 @@ A.ctNew=()=>modal(`<h2>Add a brand price list</h2>
 async function sheetText(file){const X=await excelLib();const wb=new X.Workbook();await wb.xlsx.load(await file.arrayBuffer());const out=[];wb.eachSheet(ws=>{ws.eachRow(row=>{const v=row.values.slice(1).map(c=>c&&typeof c==='object'?(c.result??c.text??c.richText?.map(t2=>t2.text).join('')??''):c??'').map(String);if(v.some(x=>x.trim()))out.push(`[${ws.name}] `+v.join(' | '))})});return out}
 A.ctRead=async()=>{const brand=val('ct_b').trim(),files=[...(document.getElementById('ct_f').files||[])],st=document.getElementById('ct_st');
   if(!brand)return toast('Add the brand name');if(!files.length)return toast('Choose the price list file');
-  if(!SAMPLE){st.hidden=false;st.className='note';st.textContent='Reading price lists is not available in this view.';return}
+  if(!SAMPLE){st.hidden=false;st.className='note';st.textContent='Reading price lists automatically is coming soon. Nothing was saved, so please try again once it is switched on.';return}
   const go=document.getElementById('ct_go');go.disabled=true;st.hidden=false;st.className='note info';
   const chunks=[];
   try{for(const f of files){
@@ -1043,12 +1047,12 @@ Reply with JSON only, in exactly this shape:
 
 Quotation text:
 ${(text||'(no text layer, read the images)').slice(0,60000)}`}
-function qErrCopy(e){return ({not_granted:'Reading was not allowed, so please type the rates below.',rate_limited:'Too many readings just now. Wait a minute and try again, or type the rates below.',lib:'Could not open the PDF reader. Check the internet connection, or type the rates below.',noimg:'Photos cannot be read in this view. Upload a PDF, or type the rates below.',image_rejected:'That picture could not be read. Try a clearer photo or the PDF.'})[e?.code]||'Could not read this quotation. Please type the rates below.'}
+function qErrCopy(e){return ({not_configured:'Reading quotations automatically is coming soon. The file is attached, so please type the rates below.',network:'No internet connection. Check it and try again, or type the rates below.',too_big:'The file is too large to read. Try fewer pages, or type the rates below.',not_granted:'Reading was not allowed, so please type the rates below.',rate_limited:'Too many readings just now. Wait a minute and try again, or type the rates below.',lib:'Could not open the PDF reader. Check the internet connection, or type the rates below.',noimg:'Photos cannot be read in this view. Upload a PDF, or type the rates below.',image_rejected:'That picture could not be read. Try a clearer photo or the PDF.'})[e?.code]||'Could not read this quotation. Please type the rates below.'}
 A.qFile=async(rid,k,input)=>{
   const files=[...(input.files||[])];if(!files.length)return;
   const r=R(rid),cat=catsOf(r)[k],its=r.items.filter(i=>i.cat===cat),st=document.getElementById('q_st');
   tmp.qfiles=files.map(f=>f.name);st.hidden=false;
-  if(!SAMPLE){st.className='note';st.textContent='Automatic reading is not available here. The file is attached, so please type the rates below.';return}
+  if(!SAMPLE){st.className='note';st.textContent='Reading quotations automatically is coming soon. The file is attached, so please type the rates below.';return}
   st.className='note info';st.textContent='Reading the quotation. This usually takes 15 to 60 seconds…';input.disabled=true;
   const mine=tmp.qbusy=uid();
   try{

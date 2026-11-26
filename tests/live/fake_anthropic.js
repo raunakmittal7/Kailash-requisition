@@ -16,10 +16,17 @@ http.createServer((req, res) => {
         { slip_text: 'cemnt 50 bag?', list_name: null, name: 'Cement', qty: 50, unit: 'bags', sub_unit: '', category: '', brand: '', spec: '', area: '', sure: false },
       ],
     };
+    const text = (body.messages?.[0]?.content || []).filter(c => c.type === 'text').map(c => c.text).join('');
+    let answer = reading;
+    if (/sonnet/.test(body.model)) answer = { ...reading, items: reading.items.map(i => ({ ...i, sure: true })) }; // the stronger model reads clearly
+    if (text.includes('TYPED items')) { // item name check: every typed item is the existing "PPC cement"
+      const rows = JSON.parse(text.split('TYPED items (JSON):\n')[1].split('\n')[0]);
+      answer = { items: rows.map(r => ({ i: r.i, name: 'PPC cement', existing: 'PPC cement', why: 'spelling' })) };
+    }
     res.writeHead(200, { 'content-type': 'application/json' });
     res.end(JSON.stringify({
       id: 'msg_test', type: 'message', role: 'assistant', model: body.model, stop_reason: 'end_turn', stop_sequence: null,
-      content: [{ type: 'text', text: 'Here is the JSON:\n' + JSON.stringify(reading) }],
+      content: [{ type: 'text', text: 'Here is the JSON:\n' + JSON.stringify(answer) }],
       usage: { input_tokens: 10, output_tokens: 10 },
     }));
   });

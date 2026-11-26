@@ -1,5 +1,6 @@
-// Reads vendor quotations and brand price lists with Claude, for the office team only
-// (storekeepers type their items by hand).
+// Reads vendor quotations and brand price lists with Claude for the office team.
+// Storekeepers may use two jobs: kind "slip" (read a photo of a handwritten requisition slip;
+// the photo is not stored anywhere) and kind "names" (suggest the proper market name for typed items).
 // The Anthropic API key lives only on the server, as the Vercel environment
 // variable ANTHROPIC_API_KEY. The website never sees it.
 //
@@ -13,6 +14,18 @@ const SUPABASE_URL = process.env.SUPABASE_URL || 'https://sptzqdmxrctnlloxjgeq.s
 const SUPABASE_KEY = 'sb_publishable_3giQunKA0R5rokf5bPtE_A_BFbh670V'; // public by design
 // Which Claude model reads the files. Set ANTHROPIC_MODEL in Vercel to change it without a code change.
 const MODEL = process.env.ANTHROPIC_MODEL || 'claude-haiku-5-5';
+// When the first reading of a slip, quote or price list comes back unclear, it is read again
+// once with this stronger model. Set ANTHROPIC_MODEL_STRONG in Vercel to change it.
+const STRONG_MODEL = process.env.ANTHROPIC_MODEL_STRONG || 'claude-sonnet-5-5';
+
+// A reading is unclear when nothing was read, or a third or more of the lines are marked not sure.
+function unclear(result) {
+  const rows = Array.isArray(result?.items) ? result.items : Array.isArray(result?.lines) ? result.lines : null;
+  if (!rows) return false;
+  if (!rows.length) return true;
+  const unsure = rows.filter(r => r && r.sure === false).length;
+  return unsure / rows.length >= 1 / 3;
+}
 const MAX_IMAGES = 5;
 const IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
 
@@ -52,13 +65,16 @@ module.exports = async (req, res) => {
   let role = null;
   try { role = await signedInRole(token); } catch { role = null; }
   if (!role) return send(res, 401, { error: 'not_granted' });
-  if (role === 'store') return send(res, 403, { error: 'not_granted' });
 
   let body = req.body;
   if (typeof body === 'string') { try { body = JSON.parse(body); } catch { body = null; } }
   const prompt = typeof body?.prompt === 'string' ? body.prompt.slice(0, 120000) : '';
   const images = Array.isArray(body?.images) ? body.images.slice(0, MAX_IMAGES) : [];
   if (!prompt) return send(res, 400, { error: 'failed' });
+  const names = body?.kind === 'names';
+  // Storekeepers may only check item names (text) and read their handwritten slips (photos, not saved).
+  const slip = body?.kind === 'slip';
+  if (role === 'store' && !((names && images.length === 0 && prompt.length <= 30000) || slip)) return send(res, 403, { error: 'not_granted' });
   for (const im of images) {
     if (!IMAGE_TYPES.includes(im?.type) || typeof im?.data !== 'string' || !im.data) {
       return send(res, 400, { error: 'image_rejected' });
@@ -71,20 +87,30 @@ module.exports = async (req, res) => {
   ];
 
   const client = new Anthropic();
-  try {
+  const ask = async model => {
     // Server-side refusal fallback exists for Opus and Sonnet, not for Haiku.
-    const fallback = /haiku/.test(MODEL) ? {} : { betas: ['server-side-fallback-2026-07-01'], fallbacks: 'default' };
+    const fallback = /haiku/.test(model) ? {} : { betas: ['server-side-fallback-2026-07-01'], fallbacks: 'default' };
     const msg = await client.beta.messages.create({
-      model: MODEL,
-      max_tokens: 16000,
+      model,
+      max_tokens: names ? 4000 : 16000,
       ...fallback,
       messages: [{ role: 'user', content }],
     });
-    if (msg.stop_reason === 'refusal') return send(res, 422, { error: 'image_rejected' });
-    const text = msg.content.filter(b => b.type === 'text').map(b => b.text).join('\n');
-    const result = firstJson(text);
-    if (!result) return send(res, 502, { error: 'failed' });
-    return send(res, 200, { result });
+    if (msg.stop_reason === 'refusal') return { refused: true };
+    return { result: firstJson(msg.content.filter(b => b.type === 'text').map(b => b.text).join('\n')) };
+  };
+  try {
+    let got = await ask(MODEL);
+    // Names are a quick text job; slips, quotes and price lists get a second, stronger look when unclear.
+    if (!names && STRONG_MODEL !== MODEL && (got.refused || !got.result || unclear(got.result))) {
+      try {
+        const again = await ask(STRONG_MODEL);
+        if (again.result) got = again;
+      } catch { /* keep the first reading */ }
+    }
+    if (got.refused && !got.result) return send(res, 422, { error: 'image_rejected' });
+    if (!got.result) return send(res, 502, { error: 'failed' });
+    return send(res, 200, { result: got.result });
   } catch (e) {
     if (e instanceof Anthropic.AuthenticationError) return send(res, 503, { error: 'not_configured' });
     if (e instanceof Anthropic.RateLimitError) return send(res, 429, { error: 'rate_limited' });

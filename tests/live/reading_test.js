@@ -32,8 +32,17 @@ const callRead = page => page.evaluate(async img => {
 
   const sk = await login(browser, '9000000004');
   await sk.evaluate(() => A.go('newreq'));
-  ok(!(await sk.$('.slipbox')) && !(await sk.$('#slipup')), 'storekeeper has no slip photo button');
-  if (mode === 'on') { const r = await callRead(sk); ok(r.status === 403, 'storekeeper cannot use reading (' + r.status + ')'); }
+  ok(!!(await sk.$('#slipup')), 'storekeeper has the slip photo button');
+  if (mode === 'on') { const r = await callRead(sk); ok(r.status === 403, 'storekeeper cannot read quotes (' + r.status + ')'); }
+  await sk.waitForFunction(() => SAMPLE !== undefined); await sk.setInputFiles('#slipup', path.join(__dirname, 'quote.jpg'));
+  if (mode === 'soon') {
+    await sk.waitForFunction(() => !document.getElementById('slipst').hidden, null, { timeout: 5000 });
+    ok(/coming soon/i.test(await sk.evaluate(() => document.getElementById('slipst').textContent)), 'slip reading says coming soon without a key');
+  } else {
+    await sk.waitForFunction(() => draft && draft.items.filter(i => i.name.trim()).length >= 2, null, { timeout: 20000 }).catch(() => {});
+    const items = await sk.evaluate(() => draft.items.filter(i => i.name.trim()).map(i => [i.name, i.qty, i.slipSure]));
+    ok(items.length === 2 && items[0][0] === 'PVC pipe 1 inch' && items[1][2] === false, 'slip photo fills the items, unclear line marked: ' + JSON.stringify(items));
+  }
 
   const pm = await login(browser, '9000000005');
   const r = await callRead(pm);
@@ -41,6 +50,23 @@ const callRead = page => page.evaluate(async img => {
   else ok(r.status === 200 && Array.isArray(r.body.result?.items), 'purchase manager gets a reading back (' + r.status + ')');
   const ready = await pm.evaluate(() => !!SAMPLE);
   ok(ready === (mode === 'on'), 'page knows whether reading is switched on: ' + ready);
+
+  // storekeeper types a new item with a typo: the proper name is suggested before sending
+  const sj = await login(browser, '9000000001');
+  await sj.evaluate(() => { A.go('newreq'); draft.deadline = new Date(Date.now() + 5 * 864e5).toISOString().slice(0, 10);
+    draft.items[0] = { ...draft.items[0], name: 'cemnt ppc', qty: 10, unit: 'bags', cat: 'Civil and structural', areaType: 'entire' }; A.submit(); });
+  if (mode === 'on') {
+    await sj.waitForSelector('#ns_0', { timeout: 10000 }).catch(() => {});
+    const shown = await sj.evaluate(() => document.getElementById('modal').innerText);
+    ok(/cemnt ppc\s*→\s*PPC cement/.test(shown), 'suggests the market name: ' + shown.replace(/\s+/g, ' ').slice(0, 120));
+    await sj.evaluate(() => A.useNames()); await sj.evaluate(() => Live.flush());
+    const it = await sj.evaluate(() => { const r = S.reqs[S.reqs.length - 1]; return r && r.items[0]; });
+    ok(it && it.name === 'PPC cement' && it.typed === 'cemnt ppc', 'requisition saved with the proper name, typed name kept: ' + JSON.stringify(it && [it.name, it.typed]));
+  } else {
+    await sj.evaluate(() => Live.flush());
+    const it = await sj.evaluate(() => { const r = S.reqs[S.reqs.length - 1]; return r && r.items[0]; });
+    ok(it && it.name === 'cemnt ppc', 'without reading switched on, the requisition is sent as typed');
+  }
 
   await browser.close();
   console.log(fails ? 'FAILED ' + fails : 'ALL PASSED');

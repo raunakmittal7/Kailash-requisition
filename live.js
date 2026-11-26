@@ -110,7 +110,7 @@
       outbox: () => fetchAll('outbox', 'id', { desc: true, max: 500 })
     });
     else jobs.store_po_lines = () => fetchAll('store_po_lines', 'po_line');
-    await Promise.all(Object.entries(jobs).map(async ([k, f]) => { T[k] = await f(); }));
+    await Promise.all(Object.entries(jobs).map(async ([k, f]) => { try { T[k] = await f(); } catch (e) { e.table = k; throw e; } }));
     return T;
   }
 
@@ -461,7 +461,7 @@
     meId = session.user.id;
     showLoading('Loading your requisitions…');
     try { await reload(); }
-    catch (e) { meId = null; last = null; S = emptyS(); render(); lgErrLater(errText(e)); return; }
+    catch (e) { console.error(e); meId = null; last = null; await sb.auth.signOut().catch(() => {}); S = emptyS(); render(); lgErrLater(errText(e) + (e?.table ? ` (while reading ${e.table}: ${e.message || ''})` : '')); return; }
     if (!myDbRole) {
       await sb.auth.signOut(); meId = null; last = null; S = emptyS(); render();
       lgErrLater('This login is not set up yet, or it has been switched off. Please ask Raunak.');

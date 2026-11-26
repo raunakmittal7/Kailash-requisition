@@ -263,11 +263,11 @@ item:['Item name','सामान का नाम'],slipTitle:['Have a handwri
 let SAMPLE=null,SAMPLE_IMG=false,SAMPLE_LIM=5,DL=null;
 DL={save:async({filename,data})=>{const u=URL.createObjectURL(new Blob([data]));const a=document.createElement('a');a.href=u;a.download=filename;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(u),4000)}};
 const b64Of=b=>new Promise((ok,no)=>{const r=new FileReader();r.onload=()=>ok(String(r.result).split(',')[1]||'');r.onerror=()=>no({code:'image_rejected'});r.readAsDataURL(b)});
-const SERVER_READ={limits:async()=>({images:{maxCount:5}}),async json(prompt,{images}={}){
+const SERVER_READ={limits:async()=>({images:{maxCount:5}}),async json(prompt,{images,kind}={}){
   const imgs=[];let total=0;
   for(const b of (images||[]).slice(0,5)){const small=(b.size>700000||!/^image\/(jpeg|png|webp)$/.test(b.type))?(await shrinkImg(b,1600,.8)).blob:b;const data=await b64Of(small);if(total+data.length>3800000)break;total+=data.length;imgs.push({type:small.type||'image/jpeg',data})}
   const t=(await SB.auth.getSession()).data.session?.access_token||'';let r;
-  try{r=await fetch('/api/read',{method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer '+t},body:JSON.stringify({prompt,images:imgs})})}catch(e){throw {code:'network'}}
+  try{r=await fetch('/api/read',{method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer '+t},body:JSON.stringify({prompt,images:imgs,kind})})}catch(e){throw {code:'network'}}
   const j=await r.json().catch(()=>({}));if(!r.ok||!j.result)throw {code:j.error||(r.status===413?'too_big':'failed')};return j.result}};
 (async()=>{try{const r=await fetch('/api/read',{cache:'no-store'});const j=await r.json();if(j?.ready){SAMPLE=SERVER_READ;SAMPLE_IMG=true;SAMPLE_LIM=5}}catch(e){SAMPLE=null}})();
 
@@ -504,7 +504,7 @@ function tracker(r){
 function itemsTable(r){
   const u=me(),edit=r.stage==='clarify'&&u.role==='store'&&u.site===r.site;
   return `<div class="tw"><table><thead><tr><th>#</th><th>Item</th><th class="num">Qty</th><th>Unit</th><th>Category</th><th>Brand</th><th>Area of usage</th>${u.role!=='store'?'<th class="num">Est. rate</th><th class="num">Est. value</th>':''}</tr></thead><tbody>
-  ${r.items.map((it,i)=>`<tr><td>${i+1}</td><td style="min-width:200px"><b>${esc(it.name)}</b>${it.orig?`<small>Hindi: ${esc(it.orig)}</small>`:''}${it.spec?`<small>${esc(it.spec)}</small>`:''}${it.photo?`<img class="thumb" src="${it.photo}" alt="Item photo" style="margin-top:4px">`:''}${(it.changes||[]).map(c=>`<span class="chg">${esc(c)}</span>`).join('')}
+  ${r.items.map((it,i)=>`<tr><td>${i+1}</td><td style="min-width:200px"><b>${esc(it.name)}</b>${it.orig?`<small>Hindi: ${esc(it.orig)}</small>`:''}${it.typed?`<small>Typed as: ${esc(it.typed)}</small>`:''}${it.spec?`<small>${esc(it.spec)}</small>`:''}${it.photo?`<img class="thumb" src="${it.photo}" alt="Item photo" style="margin-top:4px">`:''}${(it.changes||[]).map(c=>`<span class="chg">${esc(c)}</span>`).join('')}
    ${edit?`<div class="sec" style="gap:6px;margin-top:6px"><textarea placeholder="Add missing specification" oninput="A.editItem('${r.id}','${it.id}',this.value)">${esc(it.spec)}</textarea><input type="file" accept="image/*" onchange="A.editPhoto('${r.id}','${it.id}',this)"></div>`:''}</td>
    <td class="num">${nf(it.qty)}</td><td>${esc(it.unit)}${it.subUnit?`<small>${esc(it.subUnit)}</small>`:''}</td><td>${esc(it.cat)}</td><td>${esc(it.brand)||'<span class="muted">Any</span>'}</td>
    <td>${it.areaType==='specific'?`${esc(it.areaName)}<small>${esc(it.areaDesc)}</small>`:'Entire project'}</td>${u.role!=='store'?(()=>{const l=lastRate(it.name,r.site,r.id);return l?`<td class="num">${rsd(l.rate)}<small>last order ${fmtD(l.at)}</small></td><td class="num">${rs(l.rate*it.qty)}</td>`:'<td class="num muted small">No past order</td><td></td>'})():''}</tr>`).join('')}
@@ -808,7 +808,7 @@ A.edSave=()=>{const r=R(tmp.edit.rid);if(r.stage==='final'){const o=Object.fromE
   send(targets('store',r.site),`${by} changed ${r.no}: ${msgs.join('; ')}`,'Items changed');
   tmp.edit=null;render();toast(msgs.length+' change'+(msgs.length>1?'s':'')+' saved')};
 
-A.dName=(i,v)=>{const it=draft.items[i];it.fromList=false;if(hasHi(v)){it.orig=v;it.name=toEn(v)}else{it.orig='';it.name=v}const e=document.getElementById('tr_'+i);if(e)e.textContent=it.orig?'English: '+it.name:''};
+A.dName=(i,v)=>{const it=draft.items[i];it.fromList=false;it.nameOk=false;if(hasHi(v)){it.orig=v;it.name=toEn(v)}else{it.orig='';it.name=v}const e=document.getElementById('tr_'+i);if(e)e.textContent=it.orig?'English: '+it.name:''};
 function masterFor(sc){const ty=site(sc).type;return S.items.filter(x=>x.type===ty)}
 function addToMaster(it,sc){const ty=site(sc).type,n=it.name.trim();if(!n)return false;const ex=S.items.find(x=>x.type===ty&&x.name.toLowerCase()===n.toLowerCase());if(ex)return false;S.items.push({name:n,orig:it.orig||'',unit:it.unit,subUnit:it.subUnit||'',cat:it.cat,brand:it.brand||'',type:ty,added:now()});return true}
 function buildMaster(){S.items=[];S.reqs.forEach(r=>r.items.forEach(it=>addToMaster(it,r.site)));S.stock.forEach(st=>addToMaster({name:st.name,unit:st.unit,cat:st.cat},st.site));
@@ -843,12 +843,55 @@ A.submit=()=>{
   if(!draft.deadline)err.push('Choose the date you need the material by.');
   draft.items.forEach((it,i)=>{const n=`Item ${i+1}`;if(!it.name.trim())err.push(`${n}: add the item name.`);if(!(+it.qty>0))err.push(`${n}: add a quantity.`);if(!it.unit)err.push(`${n}: choose a unit.`);if(!it.cat)err.push(`${n}: choose a category.`);if(mfg&&!it.areaType)err.push(`${n}: choose the area of usage.`);if(it.areaType==='specific'&&!it.areaName.trim())err.push(`${n}: add the area name.`)});
   if(err.length){document.getElementById('ferr').innerHTML=err.map(esc).join('<br>');toast('Some details are missing');return}
+  const master=masterFor(sc),known=n=>master.some(x=>x.name.toLowerCase()===n.trim().toLowerCase());
+  const toCheck=draft.items.map((it,i)=>({it,i})).filter(({it})=>!it.fromList&&!it.nameOk&&!known(it.name));
+  if(toCheck.length&&SAMPLE&&!tmp.namesBusy)return A.checkNames(toCheck);
   const f=flowFor(sc);
   const r={id:uid(),no:nextNo('req',sc),site:sc,createdBy:u.id,createdAt:now(),deadline:new Date(draft.deadline+'T18:00').getTime(),stage:f[0],stageSince:now(),
     items:draft.items.map(it=>({...it,qty:+it.qty,name:it.name.trim()})),remarks:[],quotes:{},award:{},company:'',reminded:{},returnTo:null};
   r.items.forEach(it=>{if(it.areaType==='specific'){const m=S.areaCounts[sc]=S.areaCounts[sc]||{};m[it.areaName.trim()]=(m[it.areaName.trim()]||0)+1}});
   let added=0;r.items.forEach(it=>{if(addToMaster(it,sc))added++});S.reqs.push(r);log('Raised requisition'+(added?` (${added} new item${added>1?'s':''} added to the item list)`:''),r.no);notifyStage(r);draft=null;tmp.slipMsg=null;view={v:'req',id:r.id};render();window.scrollTo(0,0);toast('Sending…');
 };
+/* New items: Claude suggests the proper market name (no typos, standard form) and spots items already in the list */
+function namePrompt(sc,rows){const s=site(sc);return `You help a storekeeper at ${s.name} (Kailasha Group, Siliguri, India; ${s.type==='mfg'?'a beverage factory':'a real estate construction site'}) write material names for a purchase requisition.
+For each typed item give the proper name as it is known in the Indian market and trade, in English, with correct spelling.
+- Use the common trade name, not slang or a local word (for example "baalu" is "River sand", "sariya" is "TMT bar", "gitti" is "Stone chips").
+- Write sizes and grades in the usual form: "TMT bar 12 mm", "PVC pipe 1 inch", "PPC cement", "Plywood 18 mm BWR". Keep any size, grade or type the storekeeper wrote. Do not add details they did not write.
+- Do not put a brand in the name.
+- Sentence case, short, no quantity, no unit.
+- If it is the same product as one of the EXISTING items, return that existing name exactly in "existing".
+- If the typed name is already correct, return it unchanged.
+
+EXISTING items:
+${masterFor(sc).map(x=>x.name).slice(0,400).join('\n')||'(none yet)'}
+
+TYPED items (JSON):
+${JSON.stringify(rows)}
+
+Reply with JSON only, in this shape:
+{"items":[{"i":0,"name":"","existing":null,"why":""}]}
+"why" is a few plain words, like "spelling" or "trade name" or "already in the list", or "" if unchanged.`}
+A.checkNames=async list=>{
+  tmp.namesBusy=true;toast('Checking item names…');const sc=me().site;
+  const rows=list.map(({it,i})=>({i,typed:it.orig||it.name,english:it.name,unit:it.unit,category:it.cat,spec:it.spec||'',brand:it.brand||''}));
+  let res=null;try{res=await SAMPLE.json(namePrompt(sc,rows),{kind:'names'})}catch(e){res=null}
+  tmp.namesBusy=false;if(!draft)return;
+  const master=masterFor(sc),sug=[];
+  (Array.isArray(res?.items)?res.items:[]).forEach(x=>{const i=+x?.i,it=draft.items[i];if(!it||!list.some(l=>l.i===i))return;
+    const ex=x?.existing?master.find(m=>m.name.toLowerCase()===String(x.existing).toLowerCase()):null;
+    const name=String(ex?.name||x?.name||'').trim().slice(0,160);
+    if(name&&name!==it.name.trim())sug.push({i,from:it.name.trim(),to:name,ex,why:String(x?.why||(ex?'already in the list':'')).slice(0,60)})});
+  list.forEach(({it})=>it.nameOk=true);
+  if(!sug.length)return A.submit();
+  tmp.nameSug=sug;
+  modal(`<h2>Check the item names</h2><p class="muted small">These names are corrected to the usual market name. Untick any you want to keep as you typed.</p>
+    ${sug.map((x,k)=>`<label class="check" style="display:flex;gap:10px;align-items:flex-start;margin:10px 0"><input type="checkbox" id="ns_${k}" checked><span>${esc(x.from)} → <b>${esc(x.to)}</b>${x.why?` <span class="muted small">(${esc(x.why)})</span>`:''}</span></label>`).join('')}
+    <div class="mact"><button class="btn" onclick="A.close()">Go back</button><button class="btn primary" onclick="A.useNames()">Send requisition</button></div>`);
+};
+A.useNames=()=>{(tmp.nameSug||[]).forEach((x,k)=>{if(!document.getElementById('ns_'+k)?.checked)return;const it=draft.items[x.i];if(!it)return;
+    if(!it.orig)it.typed=x.from;it.name=x.to;
+    if(x.ex){it.fromList=true;it.unit=it.unit||x.ex.unit;it.cat=it.cat||x.ex.cat}});
+  tmp.nameSug=null;A.close();A.submit()};
 function notifyStage(r){send(targets(ownerOf(r),r.site),`${r.no} from ${site(r.site).name} is waiting for you (${STAGE[r.stage].label}). Needed by ${fmtD(r.deadline)}.`,'New task')}
 function advance(r){const f=flowFor(r.site),i=f.indexOf(r.stage);r.stage=f[i+1];r.stageSince=now();if(r.stage==='quotes'&&Live.isBuyer()&&refreshContractQuotes(r))log('Rate contract prices added automatically',r.no);notifyStage(r)}
 function behalfTxt(r){const o=ownerOf(r);return o!=='pm'&&o!=='store'&&o!==S.me?` on behalf of ${uname(o)}`:''}

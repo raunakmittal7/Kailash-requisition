@@ -42,6 +42,23 @@ const callRead = page => page.evaluate(async img => {
   const ready = await pm.evaluate(() => !!SAMPLE);
   ok(ready === (mode === 'on'), 'page knows whether reading is switched on: ' + ready);
 
+  // storekeeper types a new item with a typo: the proper name is suggested before sending
+  const sj = await login(browser, '9000000001');
+  await sj.evaluate(() => { A.go('newreq'); draft.deadline = new Date(Date.now() + 5 * 864e5).toISOString().slice(0, 10);
+    draft.items[0] = { ...draft.items[0], name: 'cemnt ppc', qty: 10, unit: 'bags', cat: 'Civil and structural', areaType: 'entire' }; A.submit(); });
+  if (mode === 'on') {
+    await sj.waitForSelector('#ns_0', { timeout: 10000 }).catch(() => {});
+    const shown = await sj.evaluate(() => document.getElementById('modal').innerText);
+    ok(/cemnt ppc\s*→\s*PPC cement/.test(shown), 'suggests the market name: ' + shown.replace(/\s+/g, ' ').slice(0, 120));
+    await sj.evaluate(() => A.useNames()); await sj.evaluate(() => Live.flush());
+    const it = await sj.evaluate(() => { const r = S.reqs[S.reqs.length - 1]; return r && r.items[0]; });
+    ok(it && it.name === 'PPC cement' && it.typed === 'cemnt ppc', 'requisition saved with the proper name, typed name kept: ' + JSON.stringify(it && [it.name, it.typed]));
+  } else {
+    await sj.evaluate(() => Live.flush());
+    const it = await sj.evaluate(() => { const r = S.reqs[S.reqs.length - 1]; return r && r.items[0]; });
+    ok(it && it.name === 'cemnt ppc', 'without reading switched on, the requisition is sent as typed');
+  }
+
   await browser.close();
   console.log(fails ? 'FAILED ' + fails : 'ALL PASSED');
   process.exit(fails ? 1 : 0);

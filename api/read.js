@@ -1,5 +1,6 @@
 // Reads vendor quotations and brand price lists with Claude, for the office team only
-// (storekeepers type their items by hand).
+// (storekeepers type their items by hand). Storekeepers may use one text-only job:
+// kind "names", which suggests the proper market name for items they type in.
 // The Anthropic API key lives only on the server, as the Vercel environment
 // variable ANTHROPIC_API_KEY. The website never sees it.
 //
@@ -52,13 +53,14 @@ module.exports = async (req, res) => {
   let role = null;
   try { role = await signedInRole(token); } catch { role = null; }
   if (!role) return send(res, 401, { error: 'not_granted' });
-  if (role === 'store') return send(res, 403, { error: 'not_granted' });
 
   let body = req.body;
   if (typeof body === 'string') { try { body = JSON.parse(body); } catch { body = null; } }
   const prompt = typeof body?.prompt === 'string' ? body.prompt.slice(0, 120000) : '';
   const images = Array.isArray(body?.images) ? body.images.slice(0, MAX_IMAGES) : [];
   if (!prompt) return send(res, 400, { error: 'failed' });
+  const names = body?.kind === 'names';
+  if (role === 'store' && !(names && images.length === 0 && prompt.length <= 30000)) return send(res, 403, { error: 'not_granted' });
   for (const im of images) {
     if (!IMAGE_TYPES.includes(im?.type) || typeof im?.data !== 'string' || !im.data) {
       return send(res, 400, { error: 'image_rejected' });
@@ -76,7 +78,7 @@ module.exports = async (req, res) => {
     const fallback = /haiku/.test(MODEL) ? {} : { betas: ['server-side-fallback-2026-07-01'], fallbacks: 'default' };
     const msg = await client.beta.messages.create({
       model: MODEL,
-      max_tokens: 16000,
+      max_tokens: names ? 4000 : 16000,
       ...fallback,
       messages: [{ role: 'user', content }],
     });

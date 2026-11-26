@@ -32,8 +32,17 @@ const callRead = page => page.evaluate(async img => {
 
   const sk = await login(browser, '9000000004');
   await sk.evaluate(() => A.go('newreq'));
-  ok(!(await sk.$('.slipbox')) && !(await sk.$('#slipup')), 'storekeeper has no slip photo button');
-  if (mode === 'on') { const r = await callRead(sk); ok(r.status === 403, 'storekeeper cannot use reading (' + r.status + ')'); }
+  ok(!!(await sk.$('#slipup')), 'storekeeper has the slip photo button');
+  if (mode === 'on') { const r = await callRead(sk); ok(r.status === 403, 'storekeeper cannot read quotes (' + r.status + ')'); }
+  await sk.waitForFunction(() => SAMPLE !== undefined); await sk.setInputFiles('#slipup', path.join(__dirname, 'quote.jpg'));
+  if (mode === 'soon') {
+    await sk.waitForFunction(() => !document.getElementById('slipst').hidden, null, { timeout: 5000 });
+    ok(/coming soon/i.test(await sk.evaluate(() => document.getElementById('slipst').textContent)), 'slip reading says coming soon without a key');
+  } else {
+    await sk.waitForFunction(() => draft && draft.items.filter(i => i.name.trim()).length >= 2, null, { timeout: 20000 }).catch(() => {});
+    const items = await sk.evaluate(() => draft.items.filter(i => i.name.trim()).map(i => [i.name, i.qty, i.slipSure]));
+    ok(items.length === 2 && items[0][0] === 'PVC pipe 1 inch' && items[1][2] === false, 'slip photo fills the items, unclear line marked: ' + JSON.stringify(items));
+  }
 
   const pm = await login(browser, '9000000005');
   const r = await callRead(pm);

@@ -473,6 +473,9 @@ function newReqView(){
     </div>
    </div>`).join('');
   return `<div class="head"><div><h1>${t('newreq')}</h1><p class="muted">${esc(site(sc).name)} · number is given when you send</p></div></div>
+  <div class="box slipbox"><div><h3>${t('slipTitle')}</h3><p class="small muted">${t('slipHint')}</p></div>
+    <div class="actions"><label class="btn primary" for="slipcam">${t('slipCam')}</label><input id="slipcam" class="vh" type="file" accept="image/*" capture="environment" onchange="A.slip(this)"><label class="btn" for="slipup">${t('slipUp')}</label><input id="slipup" class="vh" type="file" accept="image/*,application/pdf" multiple onchange="A.slip(this)"></div>
+    <div id="slipst" class="${tmp.slipMsg?.cls||''}" ${tmp.slipMsg?'':'hidden'}>${tmp.slipMsg?.html||''}</div></div>
   <div class="box"><label style="max-width:260px">${t('deadline')}<input type="date" value="${draft.deadline}" onchange="draft.deadline=this.value"></label></div>
   ${items}
   <div class="actions"><button class="btn" onclick="A.dAdd()">+ ${t('addItem')}</button><span style="flex:1"></span><button class="btn primary" onclick="A.submit()">${t('submit')}</button></div>
@@ -746,7 +749,7 @@ A.slip=async input=>{
       else if(f.type.startsWith('image/')){send.push((await shrinkImg(f,1800,.85)).blob)}
     }
     if(!send.length)return;
-    const res=await SAMPLE.json(slipPrompt(sc),{images:send.slice(0,SAMPLE_LIM||5)});
+    const res=await SAMPLE.json(slipPrompt(sc),{images:send.slice(0,SAMPLE_LIM||5),kind:'slip'});
     if(view.v!=='newreq'||!draft)return;
     const master=masterFor(sc),units=[...S.units,...S.unitsPending],cats=catsFor(sc);
     const got=(Array.isArray(res?.items)?res.items:[]).slice(0,60).map(x=>{

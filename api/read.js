@@ -1,6 +1,6 @@
-// Reads vendor quotations and brand price lists with Claude, for the office team only
-// (storekeepers type their items by hand). Storekeepers may use one text-only job:
-// kind "names", which suggests the proper market name for items they type in.
+// Reads vendor quotations and brand price lists with Claude for the office team.
+// Storekeepers may use two jobs: kind "slip" (read a photo of a handwritten requisition slip;
+// the photo is not stored anywhere) and kind "names" (suggest the proper market name for typed items).
 // The Anthropic API key lives only on the server, as the Vercel environment
 // variable ANTHROPIC_API_KEY. The website never sees it.
 //
@@ -60,7 +60,9 @@ module.exports = async (req, res) => {
   const images = Array.isArray(body?.images) ? body.images.slice(0, MAX_IMAGES) : [];
   if (!prompt) return send(res, 400, { error: 'failed' });
   const names = body?.kind === 'names';
-  if (role === 'store' && !(names && images.length === 0 && prompt.length <= 30000)) return send(res, 403, { error: 'not_granted' });
+  // Storekeepers may only check item names (text) and read their handwritten slips (photos, not saved).
+  const slip = body?.kind === 'slip';
+  if (role === 'store' && !((names && images.length === 0 && prompt.length <= 30000) || slip)) return send(res, 403, { error: 'not_granted' });
   for (const im of images) {
     if (!IMAGE_TYPES.includes(im?.type) || typeof im?.data !== 'string' || !im.data) {
       return send(res, 400, { error: 'image_rejected' });

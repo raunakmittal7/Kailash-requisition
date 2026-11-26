@@ -411,25 +411,43 @@ function pendingFor(u){
   if(u.role==='store')S.pos.filter(p=>p.site===u.site&&p.closeReq?.status==='pending').forEach(p=>out.push({k:'close',p,due:now()}));
   return out.sort((a,b)=>a.due-b.due);
 }
+/* "Urgent" = the storekeeper pressed the urgent button in the last 3 days, or it is due within 36 hours */
+function nudgedAt(r){const a=S.audit.find(x=>x.ref===r.no&&/^Sent urgent nudge/.test(x.text));return a?a.at:0}
+function isUrgent(r){return isOpen(r)&&(now()-nudgedAt(r)<3*D||(r.deadline>=now()&&r.deadline-now()<1.5*D))}
 function reqRow(r){
   const cats=catsOf(r);
   return `<button class="row" onclick="A.go('req','${r.id}')">
     <div class="main"><div><span class="mono">${r.no}</span> <span class="muted">· ${esc(site(r.site).name)}</span></div>
     <div class="small muted">${r.items.length} item${r.items.length>1?'s':''} · ${esc(cats.slice(0,2).join(', '))}${cats.length>2?' +'+(cats.length-2):''}</div></div>
-    <div class="side">${me()?.role!=='store'&&['quotes','final','issue'].includes(r.stage)&&rateChanges(r).length?'<span class="chip soon">Rate changed</span>':''}${dueChip(r.deadline,!isOpen(r))}${stagePill(r)}${isOpen(r)?`<span class="small muted">${t('withWho')} ${esc(ownerName(r))}, ${dur(now()-r.stageSince)}</span>`:''}</div></button>`;
+    <div class="side">${isOpen(r)&&now()-nudgedAt(r)<3*D?'<span class="chip late">Marked urgent</span>':''}${me()?.role!=='store'&&['quotes','final','issue'].includes(r.stage)&&rateChanges(r).length?'<span class="chip soon">Rate changed</span>':''}${dueChip(r.deadline,!isOpen(r))}${stagePill(r)}${isOpen(r)?`<span class="small muted">${t('withWho')} ${esc(ownerName(r))}, ${dur(now()-r.stageSince)}</span>`:''}</div></button>`;
 }
 function homeView(){
   const u=me(),pend=pendingFor(u);
-  const rows=pend.map(x=>{
+  const rowArr=pend.map(x=>{
     if(x.k==='req')return reqRow(x.r);
     if(x.k==='qty'){const q=x.q,p=P(q.poId);return `<div class="row static"><div class="main"><div>Quantity change on <span class="mono">${p.no}</span></div><div class="small muted">${esc(p.lines[q.line].name)}: ${nf(q.from)} to ${nf(q.to)} ${esc(p.lines[q.line].unit)} (${q.pct>0?'+':''}${q.pct}%). ${esc(q.reason)}</div></div><div class="side">${q.status==='trio'?'<span class="chip soon">Over 10%</span>':''}<button class="btn sm primary" onclick="A.qcOk('${q.id}')">Approve</button><button class="btn sm" onclick="A.qcNo('${q.id}')">Decline</button></div></div>`}
     const p=x.p;return `<div class="row static"><div class="main"><div>${esc(uname(p.closeReq.by))} wants to close <span class="mono">${p.no}</span></div><div class="small muted">${esc(p.closeReq.reason)}</div></div><div class="side"><button class="btn sm primary" onclick="A.closeOk('${p.id}')">Okay, close it</button><button class="btn sm" onclick="A.closeNo('${p.id}')">Keep open</button></div></div>`;
-  }).join('');
+  }),rows=rowArr.join('');
   const open=visibleReqs().filter(isOpen).length, openPO=visiblePOs().filter(p=>p.status==='open').length;
   const monthStart=new Date(new Date().getFullYear(),new Date().getMonth(),1).getTime();
   const spend=visiblePOs().filter(p=>p.createdAt>=monthStart).reduce((s,p)=>s+poValue(p),0);
   const dlg=u.role==='trio'?(delegateOf(u.id)?`<p class="note">Your approvals are handed to <b>${esc(uname(delegateOf(u.id)))}</b> until ${fmtD(S.deleg[u.id].until)}. <button class="linkbtn" onclick="A.go('settings')">Change</button></p>`:actingFor(u.id).length>1?`<p class="note info">You are also approving for ${actingFor(u.id).slice(1).map(uname).join(', ')} while they travel.</p>`:''):'';
   let extra='';
+  if(u.role==='trio'){
+    // one screen for Raunak, Ajay and Ravi: overdue, urgent, the rest, then what is stuck with others
+    const late=pend.filter(x=>x.k==='req'&&x.r.deadline<now()),urg=pend.filter(x=>x.k==='req'&&x.r.deadline>=now()&&isUrgent(x.r)),
+      rest=pend.filter(x=>!late.includes(x)&&!urg.includes(x)),
+      others=visibleReqs().filter(r=>isOpen(r)&&!canAct(r)).sort(sortUrgent),
+      rowOf=x=>rowArr[pend.indexOf(x)],
+      sec=(id,title,list,empty)=>`<section class="sec" id="${id}"><div class="head"><h2>${title} <span class="muted">(${list.length})</span></h2></div><div class="list">${list.map(rowOf).join('')||`<p class="empty">${empty}</p>`}</div></section>`;
+    return `<div class="head"><div><h1>${greet()}, ${esc(u.name.split(',')[0])}</h1><p class="muted">${fmtD(now())}</p></div></div>
+    ${dlg}
+    <div class="tiles"><div class="tile"><div class="n">${pend.length}</div><div class="l">${t('waiting')}</div></div><div class="tile"><div class="n" style="color:var(--red)">${late.length}</div><div class="l">Overdue</div></div><div class="tile"><div class="n" style="color:var(--amber)">${urg.length}</div><div class="l">Urgent</div></div><div class="tile"><div class="n">${rs(spend)}</div><div class="l">Ordered this month</div></div></div>
+    ${late.length?sec('d_late','Overdue, waiting for you',late,''):''}
+    ${sec('d_urg','Urgent, waiting for you',urg,'Nothing urgent.')}
+    ${sec('d_rest',late.length||urg.length?'Also waiting for you':t('waiting'),rest,pend.length?'Nothing else.':'All clear. Nothing is waiting for you.')}
+    <section class="sec" id="d_oth"><div class="head"><h2>Waiting on others <span class="muted">(${others.length})</span></h2><span class="small muted">Earliest deadline first</span></div><div class="list">${others.slice(0,25).map(reqRow).join('')||'<p class="empty">Nothing open with others.</p>'}</div>${others.length>25?`<p class="small muted">${others.length-25} more under Requisitions.</p>`:''}</section>`;
+  }
   if(u.role==='store'){
     const mine=visibleReqs().filter(isOpen).filter(r=>!canAct(r)).sort(sortUrgent);
     const exp=visiblePOs().filter(p=>p.status==='open');
@@ -604,7 +622,7 @@ function poView(p){
   <div class="podoc">
     <div class="lh"><div><div class="name">KAILASHA GROUP</div><div class="small muted">Siliguri, West Bengal</div></div><div style="text-align:right"><div style="font-weight:600;letter-spacing:.08em">PURCHASE ORDER</div><div class="mono">${p.no}</div><div class="small muted">${fmtD(p.createdAt)}</div></div></div>
     <div class="pometa">
-      <div><h4>Bill to</h4>${esc(p.company)}<br><span class="muted">${esc(coInfo(p.company).address||'')}${coInfo(p.company).address?'<br>':''}GSTIN: ${esc(coInfo(p.company).gstin||'to be added')}</span></div>
+      <div><h4>Bill to</h4>${esc(p.company)}<br><span class="muted">${esc(coInfo(p.company).address||'')}${coInfo(p.company).address?'<br>':''}GSTIN: ${esc(coInfo(p.company).gstin||'Applied for')}</span></div>
       <div><h4>Vendor</h4>${esc(v?.name)}<br><span class="muted">GSTIN: ${esc(v?.gstin||'not given')}<br>${esc(v?.phone)}</span></div>
       <div><h4>Deliver to</h4>${esc(s.name)}<br><span class="muted">Ref: ${p.reqNo} · ${esc(p.cat)}</span></div>
     </div>
@@ -1232,7 +1250,7 @@ A.copy=()=>{navigator.clipboard?.writeText(tmp.sheet).then(()=>toast('Copied'),(
 /* Request for quotation, laid out like a Tally proforma invoice */
 const coInfo=n=>(S.companyInfo||{})[n]||{};
 function rfqData(r,cat,vendor){const s=site(r.site),co=r.company||s.companies[0];
-  return {r,cat,s,co,coAddr:coInfo(co).address||'Address to be added in Settings',coGstin:coInfo(co).gstin||'To be added',siteAddr:s.address||'Address to be added in Settings',vendor,
+  return {r,cat,s,co,coAddr:coInfo(co).address||'Address to be added in Settings',coGstin:coInfo(co).gstin||'Applied for',siteAddr:s.address||'Address to be added in Settings',vendor,
     items:r.items.filter(i=>i.cat===cat),date:new Date()}}
 function rfqDesc(it){return [it.brand?`Brand: ${it.brand} or equivalent`:'',it.subUnit?`Packing: ${it.subUnit}`:'',it.spec||''].filter(Boolean).join('\n')}
 const RFQ_TERMS=['Please quote your rate per unit before GST, and mention the GST % for each item.','Rates should include delivery to the site address above. Mention freight or loading charges separately if any.','Mention delivery time and how long your quote is valid.','Quote the brand you are offering if different from the one asked.','Please reply on WhatsApp or email with this sheet filled in, or your own proforma invoice.'];

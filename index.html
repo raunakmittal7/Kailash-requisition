@@ -622,7 +622,7 @@ function poView(p){
   <div class="podoc">
     <div class="lh"><div><div class="name">KAILASHA GROUP</div><div class="small muted">Siliguri, West Bengal</div></div><div style="text-align:right"><div style="font-weight:600;letter-spacing:.08em">PURCHASE ORDER</div><div class="mono">${p.no}</div><div class="small muted">${fmtD(p.createdAt)}</div></div></div>
     <div class="pometa">
-      <div><h4>Bill to</h4>${esc(p.company)}<br><span class="muted">${esc(coInfo(p.company).address||'')}${coInfo(p.company).address?'<br>':''}GSTIN: ${esc(coInfo(p.company).gstin||'to be added')}</span></div>
+      <div><h4>Bill to</h4>${esc(p.company)}<br><span class="muted">${esc(coInfo(p.company).address||'')}${coInfo(p.company).address?'<br>':''}GSTIN: ${esc(coInfo(p.company).gstin||'Applied for')}</span></div>
       <div><h4>Vendor</h4>${esc(v?.name)}<br><span class="muted">GSTIN: ${esc(v?.gstin||'not given')}<br>${esc(v?.phone)}</span></div>
       <div><h4>Deliver to</h4>${esc(s.name)}<br><span class="muted">Ref: ${p.reqNo} · ${esc(p.cat)}</span></div>
     </div>
@@ -1250,7 +1250,7 @@ A.copy=()=>{navigator.clipboard?.writeText(tmp.sheet).then(()=>toast('Copied'),(
 /* Request for quotation, laid out like a Tally proforma invoice */
 const coInfo=n=>(S.companyInfo||{})[n]||{};
 function rfqData(r,cat,vendor){const s=site(r.site),co=r.company||s.companies[0];
-  return {r,cat,s,co,coAddr:coInfo(co).address||'Address to be added in Settings',coGstin:coInfo(co).gstin||'To be added',siteAddr:s.address||'Address to be added in Settings',vendor,
+  return {r,cat,s,co,coAddr:coInfo(co).address||'Address to be added in Settings',coGstin:coInfo(co).gstin||'Applied for',siteAddr:s.address||'Address to be added in Settings',vendor,
     items:r.items.filter(i=>i.cat===cat),date:new Date()}}
 function rfqDesc(it){return [it.brand?`Brand: ${it.brand} or equivalent`:'',it.subUnit?`Packing: ${it.subUnit}`:'',it.spec||''].filter(Boolean).join('\n')}
 const RFQ_TERMS=['Please quote your rate per unit before GST, and mention the GST % for each item.','Rates should include delivery to the site address above. Mention freight or loading charges separately if any.','Mention delivery time and how long your quote is valid.','Quote the brand you are offering if different from the one asked.','Please reply on WhatsApp or email with this sheet filled in, or your own proforma invoice.'];

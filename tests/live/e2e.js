@@ -130,6 +130,12 @@ const toastText = page => page.evaluate(() => document.getElementById('toast').t
   ok((await pm.evaluate(() => S.audit.slice(0, 3).map(a => a.text).join(' | '))).includes('KG/KAL/PO/'), 'history shows real PO numbers');
 
   // ---------- Storekeeper receives part, asks qty change ----------
+  { // a fresh storekeeper login sees PO lines on the very first load (no waiting for a refresh)
+    const sk2 = await login('9000000004');
+    const n = await sk2.evaluate(() => S.pos.map(p => p.lines.length));
+    ok(n.length === 2 && n.every(x => x > 0), 'storekeeper sees PO lines right after login: ' + JSON.stringify(n));
+    await sk2.context().close();
+  }
   await sk.evaluate(() => Live.reload());
   const skPo = await sk.evaluate(() => S.pos.map(p => ({ id: p.id, no: p.no, lines: p.lines.map(l => [l.name, l.qty, l.rate]) })));
   ok(skPo.length === 2 && skPo.every(p => p.lines.every(l => l[2] === 0)), 'storekeeper sees POs without rates');

@@ -75,6 +75,13 @@
   }
 
   async function loadAll() {
+    // On the first load after login the role is not known yet: ask for it first,
+    // so that a storekeeper gets the storekeeper tables (e.g. store_po_lines) straight away.
+    if (!myDbRole) {
+      const { data, error } = await sb.rpc('my_role');
+      if (error) throw Object.assign(error, { table: 'my_role' });
+      myDbRole = data || null;
+    }
     const office = !['store'].includes(myDbRole);
     const T = {};
     const jobs = {

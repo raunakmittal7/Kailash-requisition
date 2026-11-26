@@ -1,0 +1,15 @@
+set role authenticated;
+set request.jwt.claim.sub='00000000-0000-0000-0000-000000000010';
+insert into requisitions(site,stage) values ('JAI','ajay_ok') returning number;
+set request.jwt.claim.sub='00000000-0000-0000-0000-00000000000c';
+select reject_requisition(id,'0000','x') from requisitions where site='JAI';
+select reject_requisition(id,'0000','x') from requisitions where site='JAI';
+select reject_requisition(id,'0000','x') from requisitions where site='JAI';
+select reject_requisition(id,'0000','x') from requisitions where site='JAI';
+select reject_requisition(id,'1234','Not needed') from requisitions where site='JAI';
+select set_my_pin('5678','1234');
+reset role; update pins set failed=0, locked_until=null; set role authenticated;
+set request.jwt.claim.sub='00000000-0000-0000-0000-00000000000c';
+select reject_requisition(id,'1234','Not needed') from requisitions where site='JAI';
+select reject_requisition(id,'5678','Not needed') from requisitions where site='JAI';
+select number, stage from requisitions where site='JAI';

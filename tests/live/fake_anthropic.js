@@ -18,6 +18,7 @@ http.createServer((req, res) => {
     };
     const text = (body.messages?.[0]?.content || []).filter(c => c.type === 'text').map(c => c.text).join('');
     let answer = reading;
+    if (/sonnet/.test(body.model)) answer = { ...reading, items: reading.items.map(i => ({ ...i, sure: true })) }; // the stronger model reads clearly
     if (text.includes('TYPED items')) { // item name check: every typed item is the existing "PPC cement"
       const rows = JSON.parse(text.split('TYPED items (JSON):\n')[1].split('\n')[0]);
       answer = { items: rows.map(r => ({ i: r.i, name: 'PPC cement', existing: 'PPC cement', why: 'spelling' })) };

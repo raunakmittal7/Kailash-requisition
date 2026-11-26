@@ -14,6 +14,18 @@ const SUPABASE_URL = process.env.SUPABASE_URL || 'https://sptzqdmxrctnlloxjgeq.s
 const SUPABASE_KEY = 'sb_publishable_3giQunKA0R5rokf5bPtE_A_BFbh670V'; // public by design
 // Which Claude model reads the files. Set ANTHROPIC_MODEL in Vercel to change it without a code change.
 const MODEL = process.env.ANTHROPIC_MODEL || 'claude-haiku-5-5';
+// When the first reading of a slip, quote or price list comes back unclear, it is read again
+// once with this stronger model. Set ANTHROPIC_MODEL_STRONG in Vercel to change it.
+const STRONG_MODEL = process.env.ANTHROPIC_MODEL_STRONG || 'claude-sonnet-5-5';
+
+// A reading is unclear when nothing was read, or a third or more of the lines are marked not sure.
+function unclear(result) {
+  const rows = Array.isArray(result?.items) ? result.items : Array.isArray(result?.lines) ? result.lines : null;
+  if (!rows) return false;
+  if (!rows.length) return true;
+  const unsure = rows.filter(r => r && r.sure === false).length;
+  return unsure / rows.length >= 1 / 3;
+}
 const MAX_IMAGES = 5;
 const IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
 
@@ -75,20 +87,30 @@ module.exports = async (req, res) => {
   ];
 
   const client = new Anthropic();
-  try {
+  const ask = async model => {
     // Server-side refusal fallback exists for Opus and Sonnet, not for Haiku.
-    const fallback = /haiku/.test(MODEL) ? {} : { betas: ['server-side-fallback-2026-07-01'], fallbacks: 'default' };
+    const fallback = /haiku/.test(model) ? {} : { betas: ['server-side-fallback-2026-07-01'], fallbacks: 'default' };
     const msg = await client.beta.messages.create({
-      model: MODEL,
+      model,
       max_tokens: names ? 4000 : 16000,
       ...fallback,
       messages: [{ role: 'user', content }],
     });
-    if (msg.stop_reason === 'refusal') return send(res, 422, { error: 'image_rejected' });
-    const text = msg.content.filter(b => b.type === 'text').map(b => b.text).join('\n');
-    const result = firstJson(text);
-    if (!result) return send(res, 502, { error: 'failed' });
-    return send(res, 200, { result });
+    if (msg.stop_reason === 'refusal') return { refused: true };
+    return { result: firstJson(msg.content.filter(b => b.type === 'text').map(b => b.text).join('\n')) };
+  };
+  try {
+    let got = await ask(MODEL);
+    // Names are a quick text job; slips, quotes and price lists get a second, stronger look when unclear.
+    if (!names && STRONG_MODEL !== MODEL && (got.refused || !got.result || unclear(got.result))) {
+      try {
+        const again = await ask(STRONG_MODEL);
+        if (again.result) got = again;
+      } catch { /* keep the first reading */ }
+    }
+    if (got.refused && !got.result) return send(res, 422, { error: 'image_rejected' });
+    if (!got.result) return send(res, 502, { error: 'failed' });
+    return send(res, 200, { result: got.result });
   } catch (e) {
     if (e instanceof Anthropic.AuthenticationError) return send(res, 503, { error: 'not_configured' });
     if (e instanceof Anthropic.RateLimitError) return send(res, 429, { error: 'rate_limited' });

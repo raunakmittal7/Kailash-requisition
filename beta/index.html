@@ -1,0 +1,1452 @@
+<title>Kailasha Requisitions</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<meta name="theme-color" content="#ffffff">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="KG Requisitions">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500&family=Noto+Sans+Devanagari:wght@400;600&display=swap">
+<script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.6/dist/JsBarcode.all.min.js"></script>
+<style>
+/* Layout: quiet white workspace, left rail on wide screens, scrolling tab strip on phones. Colour only for status. Light theme only, by request. */
+:root{
+  --bg:#ffffff; --soft:#f6f8f7; --ink:#18201c; --muted:#68736d; --line:#e5e9e7;
+  --brand:#0e7a5c; --brand-soft:#e7f4ef; --amber:#b86e00; --amber-soft:#fdf3e2;
+  --red:#c0352b; --red-soft:#fcebea; --blue:#2858b8; --blue-soft:#eaf0fb;
+  --sans:"Inter","Noto Sans Devanagari",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace;
+  color-scheme:light;
+}
+*{box-sizing:border-box}
+html,body{background:var(--bg);color:var(--ink)}
+body{font-family:var(--sans);font-size:15px;line-height:1.5;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+h1,h2,h3{margin:0;font-weight:600;letter-spacing:-.01em;text-wrap:balance}
+h1{font-size:1.5rem} h2{font-size:1.15rem} h3{font-size:1rem}
+p{margin:0}
+button,input,select,textarea{font:inherit;color:inherit}
+.mono{font-family:var(--mono);font-size:.9em;font-variant-numeric:tabular-nums}
+.muted{color:var(--muted)} .small{font-size:.85rem}
+.num{font-variant-numeric:tabular-nums;text-align:right;white-space:nowrap}
+a{color:var(--brand)}
+:focus-visible{outline:2px solid var(--brand);outline-offset:2px}
+
+.beta{max-width:1180px;margin:0 auto;padding-block:8px;font-size:.8rem;color:var(--muted);display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.top{max-width:1180px;margin:0 auto;display:flex;align-items:center;gap:12px;padding-block:10px 14px;border-bottom:1px solid var(--line);flex-wrap:wrap}
+.logo{display:flex;align-items:center;gap:10px;font-weight:600}
+.logo b{width:32px;height:32px;border-radius:8px;background:var(--brand);color:#fff;display:grid;place-items:center;font-size:.8rem;letter-spacing:.04em}
+.top .who{margin-left:auto;display:flex;align-items:center;gap:8px;flex-wrap:wrap;justify-content:flex-end}
+.layout{max-width:1180px;margin:0 auto;display:grid;grid-template-columns:200px minmax(0,1fr);gap:32px;padding-block:20px 60px}
+.nav{display:flex;flex-direction:column;gap:2px;position:sticky;top:12px;align-self:start}
+.nav button{all:unset;cursor:pointer;padding:8px 12px;border-radius:8px;color:var(--muted);display:flex;justify-content:space-between;gap:8px}
+.nav button:hover{background:var(--soft);color:var(--ink)}
+.nav button.on{background:var(--brand-soft);color:var(--brand);font-weight:600}
+.nav button:focus-visible{outline:2px solid var(--brand)}
+.count{background:var(--red);color:#fff;border-radius:10px;font-size:.72rem;padding:0 7px;line-height:20px;font-weight:600}
+main{min-width:0;display:flex;flex-direction:column;gap:24px}
+@media (max-width:860px){
+  .layout{grid-template-columns:minmax(0,1fr);gap:16px;padding-block:12px 60px}
+  .nav{flex-direction:row;overflow-x:auto;position:static;gap:4px;padding-bottom:4px;scrollbar-width:none}
+  .nav button{white-space:nowrap;padding:7px 12px;border:1px solid var(--line)}
+}
+
+.head{display:flex;justify-content:space-between;align-items:flex-end;gap:12px;flex-wrap:wrap}
+.sec{display:flex;flex-direction:column;gap:12px}
+.box{border:1px solid var(--line);border-radius:12px;padding:16px;display:flex;flex-direction:column;gap:12px;min-width:0}
+.boxh{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap}
+.tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px}
+.tile{background:var(--soft);border-radius:12px;padding:14px 16px}
+.tile .n{font-size:1.6rem;font-weight:600;font-variant-numeric:tabular-nums}
+.tile .l{color:var(--muted);font-size:.85rem}
+
+.btn{border:1px solid var(--line);background:var(--bg);border-radius:8px;padding:8px 14px;cursor:pointer;font-weight:500;line-height:1.3}
+.btn:hover{background:var(--soft)}
+.btn.primary{background:var(--brand);border-color:var(--brand);color:#fff}
+.btn.primary:hover{filter:brightness(1.07)}
+.btn.danger{color:var(--red);border-color:#f0c9c5}
+.btn.danger:hover{background:var(--red-soft)}
+.btn.urgent{color:var(--amber);border-color:#f0d6ab}
+.btn.sm{padding:4px 10px;font-size:.85rem}
+.linkbtn{all:unset;cursor:pointer;color:var(--brand);font-weight:500}
+.linkbtn:focus-visible{outline:2px solid var(--brand)}
+.actions{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+
+.list{display:flex;flex-direction:column;border:1px solid var(--line);border-radius:12px;overflow:hidden}
+.row{all:unset;cursor:pointer;display:flex;justify-content:space-between;gap:12px;padding:12px 16px;border-top:1px solid var(--line);flex-wrap:wrap;align-items:center}
+.row:first-child{border-top:0}
+.row:hover{background:var(--soft)}
+.row:focus-visible{outline:2px solid var(--brand);outline-offset:-2px}
+.row .main{min-width:0;flex:1 1 240px}
+.row .side{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+.row.static{cursor:default}
+.row.static:hover{background:none}
+.empty{padding:20px 16px;color:var(--muted)}
+
+.chip{display:inline-block;border-radius:999px;padding:1px 10px;font-size:.78rem;font-weight:500;background:var(--soft);color:var(--muted);white-space:nowrap}
+.chip.ok{background:var(--brand-soft);color:var(--brand)}
+.chip.soon{background:var(--amber-soft);color:var(--amber)}
+.chip.late,.chip.bad{background:var(--red-soft);color:var(--red)}
+.chip.info{background:var(--blue-soft);color:var(--blue)}
+
+.tw{overflow-x:auto;border:1px solid var(--line);border-radius:12px}
+table{border-collapse:collapse;width:100%;font-size:.9rem}
+th,td{padding:9px 12px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}
+th{font-weight:500;color:var(--muted);font-size:.8rem;background:var(--soft)}
+tr:last-child td{border-bottom:0}
+tfoot td{font-weight:600;background:var(--soft)}
+td.best{color:var(--brand);font-weight:600}
+th small,td small{display:block;color:var(--muted);font-weight:400;font-size:.78rem}
+.thumb{width:44px;height:44px;object-fit:cover;border-radius:6px;border:1px solid var(--line)}
+
+label{display:flex;flex-direction:column;gap:4px;font-size:.85rem;color:var(--muted);min-width:0}
+input,select,textarea{border:1px solid var(--line);border-radius:8px;padding:8px 10px;background:var(--bg);color:var(--ink);font-size:.95rem;width:100%;min-width:0}
+textarea{min-height:64px;resize:vertical}
+input:focus,select:focus,textarea:focus{outline:2px solid var(--brand-soft);border-color:var(--brand)}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px}
+.span2{grid-column:1/-1}
+.radios{display:flex;gap:16px;flex-wrap:wrap;color:var(--ink)}
+.radios label{flex-direction:row;align-items:center;gap:6px;color:var(--ink);font-size:.95rem}
+.radios input{width:auto}
+.hint{font-size:.8rem;color:var(--muted)}
+.tr{color:var(--blue);font-size:.8rem}
+.err{color:var(--red);font-size:.85rem;min-height:1em}
+.pickrow{display:flex;gap:6px;flex-wrap:wrap}
+.pick{border:1px solid var(--line);background:var(--bg);border-radius:999px;padding:3px 12px;font-size:.85rem;cursor:pointer}
+.pick:hover{border-color:var(--brand);color:var(--brand)}
+
+.track{list-style:none;margin:0;padding:0;display:flex;gap:4px;flex-wrap:wrap}
+.track li{font-size:.8rem;padding:4px 10px;border-radius:999px;background:var(--soft);color:var(--muted)}
+.track li.done{background:var(--brand-soft);color:var(--brand)}
+.track li.cur{background:var(--brand);color:#fff;font-weight:600}
+.timeline{display:flex;flex-direction:column;gap:10px;margin:0;padding:0;list-style:none}
+.timeline li{display:grid;grid-template-columns:120px minmax(0,1fr);gap:12px;font-size:.9rem}
+.timeline .when{color:var(--muted);font-size:.8rem}
+.note{background:var(--amber-soft);border-radius:10px;padding:10px 14px;font-size:.9rem}
+.note.info{background:var(--blue-soft)}
+.note.good{background:var(--brand-soft)}
+
+.bar{height:8px;border-radius:4px;background:var(--brand);min-width:2px}
+.barrow{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,2fr) auto;gap:12px;align-items:center;padding:8px 0;border-bottom:1px solid var(--line);font-size:.9rem}
+
+/* purchase order document */
+.podoc{border:1px solid var(--line);border-radius:12px;padding:28px;display:flex;flex-direction:column;gap:18px;background:#fff}
+.lh{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;border-bottom:2px solid var(--brand);padding-bottom:14px}
+.lh .name{font-size:1.35rem;font-weight:700;letter-spacing:.12em;color:var(--brand)}
+.pometa{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px;font-size:.88rem}
+.pometa h4{margin:0 0 4px;font-size:.72rem;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);font-weight:600}
+.terms{font-size:.82rem;color:var(--muted);margin:0;padding-left:18px}
+.signs{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:24px;font-size:.85rem}
+.signs div{border-top:1px solid var(--ink);padding-top:6px}
+
+/* login */
+.login{min-height:100vh;display:grid;place-items:center;padding-block:32px}
+.lcard{width:100%;max-width:400px;display:flex;flex-direction:column;gap:14px}
+.seg{display:flex;border:1px solid var(--line);border-radius:10px;padding:3px;gap:3px}
+.seg button{flex:1;border:0;background:none;padding:7px;border-radius:7px;cursor:pointer;color:var(--muted)}
+.seg button.on{background:var(--brand-soft);color:var(--brand);font-weight:600}
+.demo{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.demo button{text-align:left;border:1px solid var(--line);background:var(--bg);border-radius:8px;padding:8px 10px;cursor:pointer;font-size:.85rem;line-height:1.3}
+.demo button:hover{border-color:var(--brand)}
+.demo small{display:block;color:var(--muted)}
+
+/* modal and toast */
+#modal .ov{position:fixed;inset:0;background:rgba(24,32,28,.25);display:grid;place-items:center;padding:max(16px,env(safe-area-inset-top,0px)) max(16px,env(safe-area-inset-right,0px)) max(16px,env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px));z-index:50}
+.mcard{background:#fff;border-radius:14px;width:100%;max-width:560px;max-height:88vh;overflow:auto;padding:20px;display:flex;flex-direction:column;gap:14px;box-shadow:0 10px 40px rgba(0,0,0,.12)}
+.mact{display:flex;justify-content:flex-end;gap:8px;flex-wrap:wrap}
+pre.sheet{white-space:pre-wrap;background:var(--soft);border-radius:10px;padding:12px;font-family:var(--mono);font-size:.8rem;margin:0}
+#toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(20px + env(safe-area-inset-bottom,0px));background:var(--ink);color:#fff;padding:10px 16px;border-radius:10px;font-size:.9rem;z-index:60;max-width:calc(100% - 32px)}
+.drop{border:1.5px dashed var(--brand);background:var(--brand-soft);border-radius:12px;padding:14px;color:var(--ink);cursor:pointer;gap:6px}
+.drop input{background:var(--bg)}
+.filled{background:var(--blue-soft)!important;border-color:var(--blue)!important}
+.combo{position:relative;display:flex;flex-direction:column;gap:4px;min-width:0}
+.combo>label{display:block}
+.combo-list{position:absolute;top:100%;left:0;right:0;margin-top:2px;background:#fff;border:1px solid var(--line);border-radius:10px;box-shadow:0 8px 24px rgba(0,0,0,.08);max-height:300px;overflow:auto;z-index:20}
+.combo-list .opt{all:unset;box-sizing:border-box;display:flex;flex-direction:column;gap:1px;width:100%;padding:8px 12px;cursor:pointer;border-top:1px solid var(--line)}
+.combo-list .opt:first-child{border-top:0}
+.combo-list .opt small{color:var(--muted);font-size:.78rem}
+.combo-list .opt:hover,.combo-list .opt.hl{background:var(--brand-soft)}
+.combo-list .opt.new{color:var(--brand);font-weight:500}
+.qmatch{display:flex;flex-wrap:wrap;gap:6px 10px;align-items:center;font-size:.82rem;color:var(--muted);margin-top:-6px;padding:6px 10px;border-radius:8px;background:var(--soft)}
+.qmatch.amber{background:var(--amber-soft);color:var(--ink);border:1px solid #f0d6ab}
+.qmatch select{width:100%;font-size:.85rem}
+.rfq{border:1px solid var(--line);font-size:.8rem;display:flex;flex-direction:column}
+.rfq-t{text-align:center;font-weight:700;letter-spacing:.06em;padding:8px;border-bottom:1px solid var(--line)}
+.rfq-g{display:grid;grid-template-columns:1fr 1fr}
+.rfq-g>div{padding:8px;border-bottom:1px solid var(--line);display:flex;flex-direction:column;gap:1px;min-width:0}
+.rfq-g>div:nth-child(odd){border-right:1px solid var(--line)}
+.rfq small{color:var(--muted);font-size:.72rem}
+.rfq-k{display:grid!important;grid-template-columns:1fr 1fr;padding:0!important}
+.rfq-k>div{padding:6px 8px;border-bottom:1px solid var(--line);display:flex;flex-direction:column}
+.rfq-k>div:nth-child(odd){border-right:1px solid var(--line)}
+.rfq table{font-size:.78rem}.rfq th,.rfq td{border:1px solid var(--line);padding:5px 6px}.rfq th{background:#fff;color:var(--ink)}
+.rfq-f{display:grid;grid-template-columns:1.6fr 1fr;border-top:1px solid var(--line)}
+.rfq-f>div{padding:8px;min-width:0}.rfq-f ol{margin:4px 0 0;padding-left:16px;color:var(--muted)}
+.rfq-s{border-left:1px solid var(--line);display:flex;flex-direction:column;justify-content:space-between;align-items:flex-end;min-height:90px}
+@media (max-width:520px){.rfq-g,.rfq-f{grid-template-columns:1fr}.rfq-g>div:nth-child(odd){border-right:0}.rfq-s{border-left:0;border-top:1px solid var(--line)}}
+.mcard:has(.rfq){max-width:820px}
+.vh{position:absolute;width:1px;height:1px;opacity:0;pointer-events:none}
+.slipbox{background:var(--soft);border-style:dashed}
+.slipth{display:flex;flex-direction:column;align-items:center;gap:2px}
+.slipth img{width:72px;height:72px;object-fit:cover;border-radius:8px;border:1px solid var(--line);display:block}
+label.btn{display:inline-flex;align-items:center;font-size:.95rem;color:var(--ink)}
+label.btn.primary{color:#fff}
+.chg{display:block;margin-top:3px;font-size:.76rem;color:var(--amber);background:var(--amber-soft);border-radius:6px;padding:1px 6px;width:fit-content}
+.editbox{border-color:var(--brand)}
+tr.del td{opacity:.45;text-decoration:line-through}
+tr.del td:last-child{opacity:1;text-decoration:none}
+.vpick{border:1px solid var(--line);border-radius:10px;max-height:190px;overflow:auto}
+.vrow{flex-direction:row!important;align-items:center;gap:10px!important;padding:7px 12px;border-top:1px solid var(--line);color:var(--ink)!important;cursor:pointer;font-size:.9rem!important}
+.vrow:first-child{border-top:0}.vrow:hover{background:var(--soft)}
+.vrow input{width:18px;height:18px;flex:none}.vrow span{display:flex;flex-direction:column;min-width:0}.vrow small{color:var(--muted);font-size:.78rem}
+.rflag{display:block;font-size:.74rem;font-weight:600;margin-top:2px}
+.rflag.up,.flaglist .up{color:var(--red)}.rflag.down,.flaglist .down{color:var(--brand)}.rflag.same{color:var(--muted);font-weight:400}
+td.aw{box-shadow:inset 0 0 0 2px var(--brand)}
+.awpick{flex-direction:row!important;align-items:center;justify-content:flex-end;gap:4px!important;font-size:.76rem!important;color:var(--ink)!important;margin-top:4px;cursor:pointer}
+.awpick input{width:auto}
+.flaglist{margin:6px 0 0;padding-left:18px;font-size:.86rem}
+.ctrow{padding:3px 0}.ctrow small{display:block;color:var(--muted);font-size:.76rem}.amb{color:var(--amber);font-weight:600}
+.labelcard{border:1px dashed var(--line);border-radius:10px;padding:12px;display:flex;flex-direction:column;align-items:center;gap:4px}
+.labelcard svg{max-width:100%}
+@media (prefers-reduced-motion:no-preference){.btn,.row,.nav button{transition:background .12s}}
+</style>
+
+<div id="app"></div>
+<div id="modal" hidden></div>
+<div id="toast" hidden></div>
+
+<script>
+/* ---------- basics ---------- */
+const H=36e5, D=24*H, KEY='kg-req-beta-v1';
+const now=()=>Date.now();
+const uid=()=>Math.random().toString(36).slice(2,9);
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const fmtD=ts=>new Date(ts).toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'});
+const fmtDT=ts=>new Date(ts).toLocaleString('en-IN',{day:'numeric',month:'short',hour:'numeric',minute:'2-digit'});
+const rs=n=>'₹'+Math.round(n).toLocaleString('en-IN');
+const nf=n=>(+n).toLocaleString('en-IN',{maximumFractionDigits:2});
+function dur(ms){const h=ms/H;if(h<1)return Math.max(1,Math.round(ms/6e4))+' min';if(h<48)return Math.round(h)+' h';return Math.round(h/24)+' days'}
+const YEAR=new Date().getFullYear();
+
+const CATS_RE=['Civil and structural','Steel and reinforcement','Electrical','Plumbing and sanitary','Tiles and flooring','Paint and finishing','Doors, windows and hardware','Wood and plywood','Glass and aluminium','Waterproofing and chemicals','Fire safety','Lifts and machinery','Tools and consumables','Safety gear','Shuttering and scaffolding'];
+const CATS_MFG=['Raw materials','Packaging','Machinery spares','Electrical','Plumbing and piping','Lab and QC','Cleaning chemicals','Lubricants and fuel','Office and stationery','Grocery & Ration','Others'];
+
+const STAGE={
+  ravi_ok:{label:'Ravi approval',short:'Ravi',owner:'ravi'},
+  ajay_ok:{label:'Ajay approval',short:'Ajay',owner:'ajay'},
+  quotes:{label:'Vendor quotes',short:'Quotes',owner:'pm'},
+  final:{label:'Raunak confirms vendors',short:'Raunak',owner:'raunak'},
+  issue:{label:'PO to be issued',short:'PO issue',owner:'pm'},
+  approved:{label:'PO issued',short:'PO issued'},
+  clarify:{label:'Sent back for clarification',short:'Sent back'},
+  rejected:{label:'Rejected',short:'Rejected'}
+};
+
+/* Hindi -> English (demo word list; the full version uses a translation service) */
+const HI={'सीमेंट':'cement','बोरी':'bags','सरिया':'TMT bar','ईंट':'bricks','रेत':'sand','बालू':'sand','गिट्टी':'stone chips','पाइप':'pipe','तार':'wire','बिजली':'electric','पेंट':'paint','टाइल':'tile','टाइल्स':'tiles','दरवाजा':'door','खिड़की':'window','लकड़ी':'wood','प्लाई':'plywood','कील':'nails','सीढ़ी':'ladder','हेलमेट':'helmet','दस्ताने':'gloves','बोतल':'bottle','ढक्कन':'cap','लेबल':'label','चीनी':'sugar','तेल':'oil','डीजल':'diesel','मोटर':'motor','पंखा':'fan','बल्ब':'bulb','स्विच':'switch','नल':'tap','वाल्व':'valve','काला':'black','सफेद':'white','लाल':'red','बड़ा':'large','छोटा':'small','नया':'new','मिमी':'mm','इंच':'inch','फुट':'ft','मीटर':'metre','किलो':'kg','लीटर':'litre','पैकेट':'packets','डिब्बा':'box','और':'and','लिए':'for','चाहिए':'needed','जल्दी':'urgent','पहली':'first','दूसरी':'second','मंजिल':'floor','छत':'roof','दीवार':'wall','प्लास्टर':'plaster','ढलाई':'casting','कांटेदार':'barbed','खंभा':'pole','खंभे':'poles','फावड़ा':'shovel','तसला':'pan','पानी':'water','टंकी':'tank','के':'','की':'','का':'','को':'','में':'in'};
+const DEV='०१२३४५६७८९';
+function toEn(t){if(!/[ऀ-ॿ]/.test(t||''))return t;return t.replace(/[०-९]/g,d=>DEV.indexOf(d)).split(/\s+/).map(w=>HI[w]??w).filter(Boolean).join(' ')}
+const hasHi=t=>/[ऀ-ॿ]/.test(t||'');
+
+/* Labels the storekeeper sees in Hindi */
+const T={home:['Home','होम'],newreq:['New requisition','नई मांग'],reqs:['Requisitions','मांग सूची'],pos:['Purchase orders','खरीद आदेश'],stock:['Stock','स्टॉक'],vendors:['Vendors','विक्रेता'],contracts:['Rate contracts','रेट कॉन्ट्रैक्ट'],reports:['Reports','रिपोर्ट'],audit:['Activity log','गतिविधि'],outbox:['WhatsApp outbox','WhatsApp'],settings:['Settings','सेटिंग'],
+item:['Item name','सामान का नाम'],slipTitle:['Have a handwritten slip?','हाथ से लिखी पर्ची है?'],slipHint:['Take a photo of it. The items are filled in below for you to check. The photo is not saved.','उसकी फोटो लें। सामान नीचे अपने आप भर जाएगा, भेजने से पहले जांच लें। फोटो सेव नहीं होती।'],slipCam:['Take photo','फोटो लें'],slipUp:['Upload photo or PDF','फोटो या PDF चुनें'],pickItem:['Tap to choose from your list, or type a new item','सूची से चुनें या नया सामान लिखें'],qty:['Quantity','मात्रा'],unit:['Unit','इकाई'],subunit:['Sub-unit (optional)','उप-इकाई (वैकल्पिक)'],category:['Category','श्रेणी'],brand:['Suggested brand','सुझाया ब्रांड'],spec:['Specification (optional)','विवरण (वैकल्पिक)'],photo:['Photo (optional)','फोटो (वैकल्पिक)'],area:['Area of usage','उपयोग की जगह'],entire:['Entire project','पूरा प्रोजेक्ट'],specific:['Specific area','खास जगह'],areaName:['Area name','जगह का नाम'],areaDesc:['What it will be used for','किस काम के लिए'],deadline:['Needed by','कब तक चाहिए'],addItem:['Add another item','और सामान जोड़ें'],submit:['Send requisition','मांग भेजें'],urgent:['Mark urgent (WhatsApp nudge)','जल्दी करें (WhatsApp)'],remove:['Remove','हटाएं'],withWho:['Pending with','किसके पास'],mine:['Your site’s requisitions','आपकी साइट की मांगें'],waiting:['Waiting for you','आपके लिए बाकी'],expected:['Material expected','आने वाला सामान']};
+
+/* Claude reads vendor quotations (only inside the Claude viewer) */
+let SAMPLE=null,SAMPLE_IMG=false,SAMPLE_LIM=5,DL=null;
+(async()=>{try{DL=(await window.claude?.use?.('downloads'))||null}catch(e){DL=null}})();
+(async()=>{try{SAMPLE=(await window.claude?.use?.('sample'))||null;if(SAMPLE){const l=await SAMPLE.limits().catch(()=>null);SAMPLE_IMG=!!l?.images;SAMPLE_LIM=l?.images?.maxCount||5}}catch(e){SAMPLE=null}})();
+
+/* ---------- state ---------- */
+let S=null;
+try{S=JSON.parse(localStorage.getItem(KEY))}catch(e){}
+function save(){try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}}
+let view={v:'home',id:null}, draft=null, tmp={}, filt={q:'',stage:'',site:''};
+let lg={mode:'pw',otp:null,mob:''};
+
+const U=id=>S.users.find(u=>u.id===id);
+const me=()=>U(S.me);
+const uname=id=>id==='pm'?'Procurement Manager':(U(id)?.name||id);
+const site=c=>S.sites.find(s=>s.code===c);
+const V=id=>S.vendors.find(v=>v.id===id);
+const R=id=>S.reqs.find(r=>r.id===id);
+const P=id=>S.pos.find(p=>p.id===id);
+const t=k=>{const a=T[k]||[k,k];return (me()?.role==='store'&&S.lang==='hi')?a[1]:a[0]};
+const catsFor=c=>site(c).type==='mfg'?S.cats.mfg:S.cats.re;
+const catsOf=r=>[...new Set(r.items.map(i=>i.cat))];
+
+function nextNo(kind,sc){const k=kind+'-'+sc+'-'+YEAR;S.counters[k]=(S.counters[k]||0)+1;const n=String(S.counters[k]).padStart(3,'0');return kind==='po'?`KG/${sc}/PO/${YEAR}/${n}`:`KG/${sc}/${YEAR}/${n}`}
+function log(text,ref,by,at){S.audit.unshift({at:at??now(),by:by??S.me,text,ref:ref||''})}
+function send(toIds,text,kind,at,toText){S.outbox.unshift({at:at??now(),to:toText||toIds.map(uname).join(', '),text,kind})}
+
+function flowFor(sc){return site(sc).type==='mfg'?['ravi_ok','ajay_ok','quotes','final','issue']:['ajay_ok','quotes','final','issue']}
+function ownerOf(r){if(r.stage==='clarify')return 'store';return STAGE[r.stage].owner||null}
+function delegateOf(id){const d=S.deleg[id];return d&&d.until>=now()?d.to:null}
+function actingFor(id){return [id,...Object.keys(S.deleg).filter(f=>delegateOf(f)===id)]}
+function targets(o,sc){if(o==='pm')return S.users.filter(u=>u.role==='pm').map(u=>u.id);if(o==='store')return S.users.filter(u=>u.role==='store'&&u.site===sc).map(u=>u.id);const d=delegateOf(o);return d?[d]:[o]}
+function ownerName(r){const o=ownerOf(r);if(!o)return '';if(o==='store')return 'Storekeeper';const d=delegateOf(o);return o==='pm'?'Procurement Manager':uname(o)+(d?` (handed to ${uname(d)})`:'')}
+function canAct(r){const u=me(),o=ownerOf(r);if(!o||!u)return false;if(o==='store')return u.role==='store'&&u.site===r.site;if(o==='pm')return u.role==='pm';return actingFor(u.id).includes(o)}
+function visibleReqs(){const u=me();return S.reqs.filter(r=>u.role!=='store'||r.site===u.site)}
+function visiblePOs(){const u=me();return S.pos.filter(p=>u.role!=='store'||p.site===u.site)}
+const isOpen=r=>!['approved','rejected'].includes(r.stage);
+
+/* category guess: history first, then keywords */
+const KW_RE=[[/cement|sand|brick|aggregate|chips|block|concrete|barbed|fenc|pole/i,'Civil and structural'],[/tmt|steel|rod|\bbar\b|binding/i,'Steel and reinforcement'],[/wire|cable|switch|mcb|bulb|light|conduit|socket|fan|electric/i,'Electrical'],[/pipe|cpvc|upvc|tap|valve|sanitary|basin|commode|tank/i,'Plumbing and sanitary'],[/tile|granite|marble|floor/i,'Tiles and flooring'],[/paint|putty|primer|emulsion/i,'Paint and finishing'],[/door|window|hinge|lock|handle/i,'Doors, windows and hardware'],[/ply|wood|timber|board|laminate/i,'Wood and plywood'],[/glass|alumin/i,'Glass and aluminium'],[/waterproof|chemical|admix|sealant/i,'Waterproofing and chemicals'],[/fire|extinguish|sprinkler/i,'Fire safety'],[/lift|mixer|vibrator|machine/i,'Lifts and machinery'],[/helmet|glove|shoe|harness|jacket/i,'Safety gear'],[/shutter|scaffold|prop/i,'Shuttering and scaffolding'],[/drill|blade|tool|nail|screw|shovel|pan\b/i,'Tools and consumables']];
+const KW_MFG=[[/rice|\bdal\b|atta|flour|\btea\b|grocery|ration|spice|masala|\bsalt\b|mustard oil|edible oil|vegetable|cooking gas|lpg/i,'Grocery & Ration'],[/preform|cap|label|carton|shrink|film|bottle/i,'Packaging'],[/sugar|concentrate|co2|flavou?r|syrup/i,'Raw materials'],[/bearing|belt|seal|spare|gear\b(?! ?(box )?oil)|nozzle/i,'Machinery spares'],[/lab|reagent|test|ph\b/i,'Lab and QC'],[/caustic|cip|sanitiz|detergent/i,'Cleaning chemicals'],[/oil|grease|diesel|lubric/i,'Lubricants and fuel'],[/paper|pen\b|file|stationery/i,'Office and stationery'],[/wire|cable|switch|mcb|motor/i,'Electrical'],[/pipe|valve|tap|fitting/i,'Plumbing and piping']];
+function guessCat(name,sc){const n=(name||'').trim().toLowerCase();if(!n)return null;const type=site(sc).type;const h=S.catHistory[type+'|'+n];if(h)return {cat:h,from:'history'};for(const [re,c] of (type==='mfg'?KW_MFG:KW_RE))if(re.test(n)&&catsFor(sc).includes(c))return {cat:c,from:'guess'};return null}
+
+/* ---------- seed (sample data) ---------- */
+function seed(){
+  const t0=now();
+  S={v:4,me:null,lang:'en',counters:{},reqs:[],pos:[],qty:[],stock:[],moves:[],audit:[],outbox:[],tally:[],deleg:{},catHistory:{},
+  users:[
+    {id:'sk_jai',name:'Storekeeper, Jaigaon',mobile:'9000000001',role:'store',site:'JAI'},
+    {id:'sk_mat',name:'Storekeeper, Matigara',mobile:'9000000002',role:'store',site:'MAT'},
+    {id:'sk_tal',name:'Storekeeper, Talma',mobile:'9000000003',role:'store',site:'TAL'},
+    {id:'sk_kal',name:'Storekeeper, Kaveri Agro',mobile:'9000000004',role:'store',site:'KAL'},
+    {id:'pm',name:'Procurement Manager',mobile:'9000000005',role:'pm'},
+    {id:'ajay',name:'Ajay Agarwal',mobile:'9000000006',role:'trio'},
+    {id:'ravi',name:'Ravi Mittal',mobile:'9000000007',role:'trio'},
+    {id:'raunak',name:'Raunak',mobile:'9000000008',role:'trio'}].map(u=>({pass:'demo',pin:'1234',...u})),
+  sites:[
+    {code:'JAI',name:'Jaigaon Project',type:'re',companies:['Billing company 1 (name to come)','Billing company 2 (name to come)']},
+    {code:'MAT',name:'Matigara Project',type:'re',companies:['Billing company (name to come)']},
+    {code:'TAL',name:'Talma land project',type:'re',companies:['Billing company (name to come)']},
+    {code:'KAL',name:'Kaveri Agro LLP',type:'mfg',companies:['Kaveri Agro LLP']}],
+  cats:{re:[...CATS_RE],mfg:[...CATS_MFG]},
+  units:['bags','kg','MT','nos','metres','sqft','cft','brass','litres','boxes','rolls','coils','sets','pairs','packets'],
+  unitsPending:[],
+  areas:{JAI:['Tower A','Tower B'],MAT:['Block 1'],TAL:[],KAL:['Filling line 1','Water treatment plant']},
+  areaCounts:{JAI:{'Tower A':3,'Club house':2},MAT:{},TAL:{'Boundary wall':2},KAL:{'Filling line 1':4,'Boiler room':2}},
+  areaDismissed:[],
+  terms:['Rates are inclusive of loading and delivery to site unless stated.','Material must match the brand and specification in this order.','Delivery challan must quote this PO number.','Payment as per agreed terms after receipt and checking at site.','Kailasha Group may reject material that does not meet the specification.'],
+  vendors:[
+    {id:'v1',name:'Sample Cement Agency',contact:'Sample contact',phone:'90000 10001',email:'',gstin:'19ABCDE1234F1Z5',city:'Siliguri',cats:'Civil and structural'},
+    {id:'v2',name:'Sample Steel Traders',contact:'Sample contact',phone:'90000 10002',email:'',gstin:'19ABCDE1234F2Z4',city:'Siliguri',cats:'Steel and reinforcement'},
+    {id:'v3',name:'Sample Electricals',contact:'Sample contact',phone:'90000 10003',email:'',gstin:'19ABCDE1234F3Z3',city:'Siliguri',cats:'Electrical'},
+    {id:'v4',name:'Sample Hardware Store',contact:'Sample contact',phone:'90000 10004',email:'',gstin:'19ABCDE1234F4Z2',city:'Jalpaiguri',cats:'Electrical, Plumbing and sanitary, Tools and consumables'},
+    {id:'v5',name:'Sample PET Packaging',contact:'Sample contact',phone:'90000 10005',email:'',gstin:'19ABCDE1234F5Z1',city:'Kolkata',cats:'Packaging'},
+    {id:'v6',name:'Sample Polymers',contact:'Sample contact',phone:'90000 10006',email:'',gstin:'19ABCDE1234F6Z0',city:'Guwahati',cats:'Packaging'},
+    {id:'v7',name:'Sample Bricks and Aggregates',contact:'Sample contact',phone:'90000 10007',email:'',gstin:'19ABCDE1234F7Z9',city:'Siliguri',cats:'Civil and structural'}]};
+  const mk=(sc,by,ago,stage,stageAgo,dueIn,items,extra={})=>{
+    const r={id:uid(),no:nextNo('req',sc),site:sc,createdBy:by,createdAt:t0-ago,deadline:t0+dueIn,stage,stageSince:t0-stageAgo,
+      items:items.map(x=>({id:uid(),qty:1,unit:'nos',subUnit:'',cat:'',brand:'',spec:'',photo:'',areaType:'entire',areaName:'',areaDesc:'',orig:'',...x})),
+      remarks:[],quotes:{},award:{},company:'',reminded:{},returnTo:null,...extra};
+    S.reqs.push(r);log('Raised requisition',r.no,by,r.createdAt);return r};
+  const q=(r,cat,v,brand,gst,rates,ago)=>{const its=r.items.filter(i=>i.cat===cat);const o={id:uid(),vendorId:v,brand,gst,rates:{},at:t0-ago};its.forEach((it,i)=>o.rates[it.id]=rates[i]);(r.quotes[cat]=r.quotes[cat]||[]).push(o);log(`Added quote from ${V(v).name} for ${cat}`,r.no,'pm',t0-ago);return o};
+
+  // sample rate contracts (prices are made up)
+  S.vendors.push({id:'v8',name:'Sample Pipes Distributor',contact:'Sample contact',phone:'90000 10008',email:'',gstin:'19ABCDE1234F8Z8',city:'Siliguri',cats:'Plumbing and sanitary'});
+  const pipes=(p)=>[['Pipes','CPVC SDR 11 pipe 15 mm (1/2 inch)','metre',p[0]],['Pipes','CPVC SDR 11 pipe 20 mm (3/4 inch)','metre',p[1]],['Pipes','CPVC SDR 11 pipe 25 mm (1 inch)','metre',p[2]],['Pipes','CPVC SDR 11 pipe 32 mm (1 1/4 inch)','metre',p[3]],['Fittings','CPVC elbow 90° 25 mm (1 inch)','nos',p[4]],['Fittings','CPVC tee 25 mm (1 inch)','nos',p[5]],['Fittings','CPVC coupler 25 mm (1 inch)','nos',p[6]],['Valves','CPVC ball valve 25 mm (1 inch)','nos',p[7]]].map(([g,name,unit,price])=>({g,name,unit,price}));
+  S.rateLists=[{id:'rlA',brand:'Astral',title:'Astral CPVC price list (sample)',vendorId:'v4',type:'re',gst:18,defDisc:'30',disc:[{group:'Pipes',d:'40+2'},{group:'Fittings',d:'35'}],rows:pipes([142,198,296,452,46,61,28,520]),uploaded:t0-20*D,validTill:'2027-03-31',sample:true},
+    {id:'rlS',brand:'Supreme',title:'Supreme CPVC price list (sample)',vendorId:'v8',type:'re',gst:18,defDisc:'28',disc:[{group:'Pipes',d:'42'},{group:'Fittings',d:'33'}],rows:pipes([138,192,301,447,44,63,27,505]),uploaded:t0-20*D,validTill:'2027-03-31',sample:true}];
+  S.contractMap={};
+
+  // earlier orders, so that "last order" rates exist
+  const hist=(sc,by,ago,vid,brand,gst,items)=>{const h=mk(sc,by,ago+2*D,'approved',ago,-ago,items.map(([name,qty,unit,cat])=>({name,qty,unit,cat,brand})));
+    const qq=q(h,items[0][3],vid,brand,gst,items.map(x=>x[4]),ago+D);h.items.forEach(it=>h.award[it.id]=qq.id);h.awardBy='raunak';
+    const ph=makePO(h,vid,h.items.map(it=>({it,q:qq})),site(sc).companies[0],t0-ago);ph.lines.forEach(l=>l.received=l.qty);ph.status='done';log('Issued purchase order: '+ph.no,h.no,'pm',t0-ago)};
+  hist('JAI','sk_jai',70*D,'v1','UltraTech',28,[['OPC 53 grade cement',300,'bags','Civil and structural',395]]);
+  hist('JAI','sk_jai',62*D,'v2','Tata Tiscon',18,[['TMT bar 12 mm',2,'MT','Steel and reinforcement',61500],['Binding wire',60,'kg','Steel and reinforcement',72]]);
+  hist('MAT','sk_mat',45*D,'v3','Havells / Anchor',18,[['FR copper wire 2.5 sq mm',8,'coils','Electrical',2050],['Modular switch 6A',100,'nos','Electrical',90]]);
+  hist('KAL','sk_kal',30*D,'v5','Sample brand A',18,[['PET preform 500 ml, 28 g',20000,'nos','Packaging',2.2],['Plastic cap 28 mm',20000,'nos','Packaging',0.64]]);
+
+  const r1=mk('JAI','sk_jai',7*H,'ajay_ok',6*H,2*D,[
+    {name:'OPC 53 grade cement',qty:200,unit:'bags',subUnit:'bag of 50 kg',cat:'Civil and structural',brand:'UltraTech',areaType:'specific',areaName:'Tower A',areaDesc:'3rd floor slab casting',orig:'सीमेंट 53 ग्रेड'},
+    {name:'TMT bar 12 mm',qty:1.5,unit:'MT',cat:'Steel and reinforcement',brand:'Tata Tiscon',areaType:'specific',areaName:'Tower A',areaDesc:'3rd floor slab casting'},
+    {name:'Binding wire',qty:50,unit:'kg',cat:'Steel and reinforcement',brand:'Any ISI'}]);
+
+  const r2=mk('MAT','sk_mat',2*D,'quotes',20*H,4*D,[
+    {name:'FR copper wire 2.5 sq mm',qty:10,unit:'coils',subUnit:'coil of 90 m',cat:'Electrical',brand:'Havells',spec:'Red and black, 5 coils each'},
+    {name:'Modular switch 6A',qty:120,unit:'nos',cat:'Electrical',brand:'Anchor Roma'},
+    {name:'CPVC pipe 1 inch',qty:60,unit:'metres',subUnit:'length of 3 m',cat:'Plumbing and sanitary',brand:'Astral',areaType:'specific',areaName:'Block 1',areaDesc:'Toilets, ground and first floor'}]);
+  log('Approved (Ajay approval)',r2.no,'ajay',t0-20*H);
+  ['rlA','rlS'].forEach(l=>S.contractMap[l+'|'+normTxt('CPVC pipe 1 inch')]={row:2,factor:1,sure:true});
+  refreshContractQuotes(r2);log('Rate contract prices added automatically',r2.no,'pm',t0-20*H);
+  q(r2,'Electrical','v3','Havells / Anchor',18,[2150,92],10*H);
+  q(r2,'Electrical','v4','Polycab / Anchor',18,[1990,98],5*H);
+
+  const rs1=mk('JAI','sk_jai',26*H,'quotes',4*H,3*D,[{name:'Binding wire',qty:40,unit:'kg',cat:'Steel and reinforcement',brand:'Any ISI',areaType:'specific',areaName:'Tower B',areaDesc:'Column reinforcement'}]);
+  log('Approved (Ajay approval)',rs1.no,'ajay',t0-4*H);q(rs1,'Steel and reinforcement','v2','Local ISI',18,[70],2*H);
+
+  const r3=mk('KAL','sk_kal',3*D,'final',3*H,1*D,[
+    {name:'PET preform 500 ml, 28 g',qty:50000,unit:'nos',subUnit:'bag of 2,000',cat:'Packaging',brand:'Any food grade',areaType:'specific',areaName:'Filling line 1',areaDesc:'Trial run of soft drink line'},
+    {name:'Plastic cap 28 mm',qty:50000,unit:'nos',subUnit:'carton of 5,000',cat:'Packaging',brand:'Any food grade',areaType:'specific',areaName:'Filling line 1',areaDesc:'Trial run of soft drink line'}]);
+  log('Approved (Ravi approval)',r3.no,'ravi',t0-2.5*D);log('Approved (Ajay approval)',r3.no,'ajay',t0-2*D);
+  q(r3,'Packaging','v5','Sample brand A',18,[2.35,0.62],30*H);
+  q(r3,'Packaging','v6','Sample brand B',18,[2.28,0.66],26*H);
+  log('Sent quote comparison to Raunak',r3.no,'pm',t0-3*H);
+
+  const r4=mk('JAI','sk_jai',8*D,'approved',5*D,-3*D,[
+    {name:'Fly ash bricks',qty:20000,unit:'nos',cat:'Civil and structural',brand:'Local, IS 12894',areaType:'specific',areaName:'Tower B',areaDesc:'Ground floor walls'}]);
+  log('Approved (Ajay approval)',r4.no,'ajay',t0-7*D);
+  const q4=q(r4,'Civil and structural','v7','Local',5,[6.4],6*D);
+  q(r4,'Civil and structural','v1','Local',5,[6.9],6*D);
+  r4.award[r4.items[0].id]=q4.id;r4.awardBy='raunak';
+  log('Confirmed vendors: Fly ash bricks → '+V('v7').name,r4.no,'raunak',t0-5.2*D);
+  const p4=makePO(r4,'v7',[{it:r4.items[0],q:q4}],site('JAI').companies[0],t0-5*D);
+  log('Issued purchase order: '+p4.no,r4.no,'pm',t0-5*D);
+  p4.lines[0].received=12000;p4.receipts.push({at:t0-2*D,by:'sk_jai',challan:'DC-4471',lines:[12000]});
+  stockAdd('JAI','Fly ash bricks','nos',12000,'Received','sk_jai','Against '+p4.no,'Civil and structural',t0-2*D);
+  S.tally.push({id:uid(),at:t0-2*D,po:p4.no,vendor:V('v7').name,text:'Receipt 12,000 nos Fly ash bricks',status:'Waiting for Tally connector'});
+  log('Recorded receipt of 12,000 nos (challan DC-4471)',p4.no,'sk_jai',t0-2*D);
+
+  const r5=mk('KAL','sk_kal',1.2*H,'ravi_ok',1*H,16*H,[
+    {name:'Caustic soda flakes',qty:200,unit:'kg',cat:'Cleaning chemicals',brand:'Any 98%',areaType:'specific',areaName:'Filling line 1',areaDesc:'CIP cleaning before trial'},
+    {name:'Gear oil EP 90',qty:20,unit:'litres',cat:'Lubricants and fuel',brand:'Servo',areaType:'specific',areaName:'Boiler room',areaDesc:'Feed pump gearbox'}]);
+
+  const r6=mk('TAL','sk_tal',2*D,'clarify',22*H,5*D,[
+    {name:'Barbed wire',qty:40,unit:'rolls',cat:'Civil and structural',brand:'Tata Wiron',areaType:'specific',areaName:'Boundary wall',areaDesc:'Fencing on north side',orig:'कांटेदार तार'},
+    {name:'RCC fencing pole 7 ft',qty:150,unit:'nos',cat:'Civil and structural',brand:'Local',areaType:'specific',areaName:'Boundary wall',areaDesc:'Fencing on north side'}],{returnTo:'ajay_ok'});
+  r6.remarks.push({at:t0-22*H,by:'ajay',kind:'Sent back',text:'Please add a photo or the gauge of the barbed wire, and the roll length.'});
+  log('Sent back for clarification',r6.no,'ajay',t0-22*H);
+
+  // Kaveri stock
+  [['PET preform 500 ml, 28 g','nos',18000,'Packaging'],['Plastic cap 28 mm','nos',22000,'Packaging'],['Shrink film roll','rolls',14,'Packaging'],['Caustic soda flakes','kg',35,'Cleaning chemicals'],['Label 500 ml','nos',30000,'Packaging']].forEach(([n,u,qy,c])=>stockAdd('KAL',n,u,qy,'Opening stock','sk_kal','Opening balance',c,t0-4*D));
+  const pf=S.stock.find(s=>s.name.startsWith('PET'));
+  move(pf,'Issued',-4000,'sk_kal','To Filling line 1, shift A',t0-20*H);
+  move(pf,'Returned',400,'sk_kal','From Filling line 1, end of shift A',t0-12*H);
+  S.audit.sort((a,b)=>b.at-a.at);
+  buildMaster();
+  return S;
+}
+
+function makePO(r,vendorId,entries,company,at){
+  const p={id:uid(),no:nextNo('po',r.site),reqId:r.id,reqNo:r.no,site:r.site,cat:[...new Set(entries.map(e=>e.it.cat))].join(', '),vendorId,company,status:'open',createdAt:at??now(),receipts:[],closeReq:null,closeNote:'',
+    awardBy:r.smallOrder?'pm10k':r.pmDecides?'pm':(r.awardBy||'raunak'),issuedBy:'pm',
+    lines:entries.map(({it,q})=>({itemId:it.id,name:it.name,brand:q.brand,qty:it.qty,unit:it.unit,subUnit:it.subUnit,rate:+q.rates[it.id]||0,gst:+q.gst||0,received:0}))};
+  S.pos.push(p);return p}
+const poValue=p=>p.lines.reduce((s,l)=>s+l.qty*l.rate*(1+l.gst/100),0);
+const quoteTotal=(its,qt)=>its.reduce((s,it)=>s+(+qt.rates[it.id]||0)*it.qty,0)*(1+(+qt.gst||0)/100);
+
+function stockAdd(sc,name,unit,qty,kind,by,note,cat,at){
+  let s=S.stock.find(x=>x.site===sc&&x.name.toLowerCase()===name.toLowerCase());
+  if(!s){const n=S.stock.filter(x=>x.site===sc).length+1;s={id:uid(),site:sc,name,unit,qty:0,cat:cat||'',barcode:`${sc}-${String(n).padStart(4,'0')}`};S.stock.push(s)}
+  move(s,kind,qty,by,note,at);return s}
+function move(s,kind,qty,by,note,at){s.qty+=qty;S.moves.unshift({id:uid(),at:at??now(),by,site:s.site,itemId:s.id,kind,qty:Math.abs(qty),note})}
+
+/* 4-hour auto reminders */
+function runReminders(){
+  S.reqs.filter(isOpen).forEach(r=>{
+    const key=r.stage+'@'+r.stageSince;
+    if(now()-r.stageSince>4*H&&!r.reminded[key]){
+      r.reminded[key]=1;
+      send(targets(ownerOf(r),r.site),`Reminder: ${r.no} (${site(r.site).name}) has been waiting with you for over 4 hours. Needed by ${fmtD(r.deadline)}.`,'Auto reminder',r.stageSince+4*H);
+    }});
+  S.outbox.sort((a,b)=>b.at-a.at);
+}
+
+/* ---------- small UI helpers ---------- */
+function toast(m){const e=document.getElementById('toast');e.textContent=m;e.hidden=false;clearTimeout(toast.t);toast.t=setTimeout(()=>e.hidden=true,3200)}
+function modal(html){const m=document.getElementById('modal');m.innerHTML=`<div class="ov" onclick="if(event.target===this)A.close()"><div class="mcard" role="dialog" aria-modal="true">${html}</div></div>`;m.hidden=false;const f=m.querySelector('input:not([type=radio]),textarea,select');if(f)f.focus()}
+function dueChip(ts,done){if(done)return '';const d=ts-now();if(d<0)return `<span class="chip late">Overdue ${dur(-d)}</span>`;if(d<1.5*D)return `<span class="chip soon">Due in ${dur(d)}</span>`;return `<span class="chip">Due ${fmtD(ts)}</span>`}
+function stagePill(r){if(r.smallOrder&&r.stage==='approved')return '<span class="chip ok">PO issued · small order</span>';const c={approved:'ok',rejected:'bad',clarify:'soon'}[r.stage]||'info';return `<span class="chip ${c}">${STAGE[r.stage].label}</span>`}
+const val=id=>document.getElementById(id)?.value??'';
+function sortUrgent(a,b){return a.deadline-b.deadline}
+
+/* ---------- render ---------- */
+function render(){
+  runReminders();
+  const app=document.getElementById('app');
+  if(!S.me||!me()){app.innerHTML=loginView();save();return}
+  const u=me();
+  const nav=navFor(u).map(([k])=>{const c=k==='home'?pendingFor(u).length:0;return `<button class="${view.v===k||(view.v==='req'&&k==='reqs')||(view.v==='po'&&k==='pos')||(view.v==='contract'&&k==='contracts')?'on':''}" onclick="A.go('${k}')"><span>${t(k)}</span>${c?`<span class="count">${c}</span>`:''}</button>`}).join('');
+  app.innerHTML=`
+  <div class="beta"><span>Beta preview with sample data. Nothing is sent to anyone, and changes stay on this device.</span><button class="linkbtn" onclick="A.resetAsk()">Reset sample data</button></div>
+  <header class="top">
+    <div class="logo"><b>KG</b><span>Kailasha Requisitions</span></div>
+    <div class="who">
+      ${u.role==='store'?`<div class="seg" style="padding:2px"><button class="${S.lang==='en'?'on':''}" onclick="A.lang('en')">English</button><button class="${S.lang==='hi'?'on':''}" onclick="A.lang('hi')">हिंदी</button></div>`:''}
+      <span class="small"><b>${esc(u.name)}</b> <span class="muted">· ${roleName(u)}</span></span>
+      <button class="btn sm" onclick="A.logout()">Log out</button>
+    </div>
+  </header>
+  <div class="layout"><nav class="nav" aria-label="Main">${nav}</nav><main>${viewHtml()}</main></div>`;
+  save();
+}
+function roleName(u){return u.role==='store'?'Storekeeper, '+site(u.site).name:u.role==='pm'?'Procurement':'Approver'}
+function navFor(u){
+  if(u.role==='store')return [['home'],['newreq'],['reqs'],['pos'],['stock']];
+  if(u.role==='pm')return [['home'],['reqs'],['pos'],['vendors'],['contracts'],['stock'],['reports'],['outbox']];
+  return [['home'],['reqs'],['pos'],['vendors'],['contracts'],['stock'],['reports'],['audit'],['outbox'],['settings']];
+}
+function viewHtml(){
+  switch(view.v){
+    case 'newreq':return newReqView();
+    case 'reqs':return reqsView();
+    case 'req':return reqView(R(view.id));
+    case 'pos':return posView();
+    case 'po':return poView(P(view.id));
+    case 'stock':return stockView();
+    case 'vendors':return vendorsView();
+    case 'contracts':return contractsView();
+    case 'contract':return contractView(R_L(view.id));
+    case 'reports':return reportsView();
+    case 'audit':return auditView();
+    case 'outbox':return outboxView();
+    case 'settings':return settingsView();
+    default:return homeView();
+  }
+}
+
+/* ---------- login ---------- */
+function loginView(){
+  const demo=S.users.map(u=>`<button onclick="A.quick('${u.id}')">${esc(u.name)}<small>${u.role==='store'?'Storekeeper':u.role==='pm'?'Procurement':'Approver'}</small></button>`).join('');
+  return `<div class="login"><div class="lcard">
+    <div class="logo"><b>KG</b><span>Kailasha Group</span></div>
+    <div><h1>Log in</h1><p class="muted">Material requisitions for all projects</p></div>
+    <label>Mobile number<input id="lg_mob" inputmode="numeric" maxlength="10" placeholder="10-digit mobile number" value="${esc(lg.mob)}"></label>
+    <div class="seg"><button class="${lg.mode==='pw'?'on':''}" onclick="A.lgMode('pw')">Password</button><button class="${lg.mode==='otp'?'on':''}" onclick="A.lgMode('otp')">WhatsApp code</button></div>
+    ${lg.mode==='pw'?`<label>Password<input id="lg_pw" type="password" onkeydown="if(event.key==='Enter')A.loginPw()"></label><button class="btn primary" onclick="A.loginPw()">Log in</button>`
+    :lg.otp?`<label>6-digit code<input id="lg_otp" inputmode="numeric" maxlength="6" onkeydown="if(event.key==='Enter')A.loginOtp()"></label><p class="note info">WhatsApp is not connected in this preview, so here is the code that would arrive: <b class="mono">${lg.otp}</b></p><button class="btn primary" onclick="A.loginOtp()">Verify and log in</button>`
+    :`<button class="btn primary" onclick="A.sendOtp()">Send code on WhatsApp</button>`}
+    <p class="err" id="lg_err"></p>
+    <div class="sec"><h3>Or try the preview as</h3><div class="demo">${demo}</div>
+    <p class="hint">Sample mobile numbers are 9000000001 to 9000000008. Password for everyone: <b>demo</b>. Reject PIN: <b>1234</b>.</p></div>
+  </div></div>`;
+}
+
+/* ---------- home ---------- */
+function pendingFor(u){
+  const out=[];
+  visibleReqs().filter(r=>isOpen(r)&&canAct(r)).sort(sortUrgent).forEach(r=>out.push({k:'req',r,due:r.deadline}));
+  S.qty.filter(q=>(q.status==='pm'&&u.role==='pm')||(q.status==='trio'&&actingFor(u.id).includes(q.trio))).forEach(q=>out.push({k:'qty',q,due:now()}));
+  if(u.role==='store')S.pos.filter(p=>p.site===u.site&&p.closeReq?.status==='pending').forEach(p=>out.push({k:'close',p,due:now()}));
+  return out.sort((a,b)=>a.due-b.due);
+}
+function reqRow(r){
+  const cats=catsOf(r);
+  return `<button class="row" onclick="A.go('req','${r.id}')">
+    <div class="main"><div><span class="mono">${r.no}</span> <span class="muted">· ${esc(site(r.site).name)}</span></div>
+    <div class="small muted">${r.items.length} item${r.items.length>1?'s':''} · ${esc(cats.slice(0,2).join(', '))}${cats.length>2?' +'+(cats.length-2):''}</div></div>
+    <div class="side">${me()?.role!=='store'&&['quotes','final','issue'].includes(r.stage)&&rateChanges(r).length?'<span class="chip soon">Rate changed</span>':''}${dueChip(r.deadline,!isOpen(r))}${stagePill(r)}${isOpen(r)?`<span class="small muted">${t('withWho')} ${esc(ownerName(r))}, ${dur(now()-r.stageSince)}</span>`:''}</div></button>`;
+}
+function homeView(){
+  const u=me(),pend=pendingFor(u);
+  const rows=pend.map(x=>{
+    if(x.k==='req')return reqRow(x.r);
+    if(x.k==='qty'){const q=x.q,p=P(q.poId);return `<div class="row static"><div class="main"><div>Quantity change on <span class="mono">${p.no}</span></div><div class="small muted">${esc(p.lines[q.line].name)}: ${nf(q.from)} to ${nf(q.to)} ${esc(p.lines[q.line].unit)} (${q.pct>0?'+':''}${q.pct}%). ${esc(q.reason)}</div></div><div class="side">${q.status==='trio'?'<span class="chip soon">Over 10%</span>':''}<button class="btn sm primary" onclick="A.qcOk('${q.id}')">Approve</button><button class="btn sm" onclick="A.qcNo('${q.id}')">Decline</button></div></div>`}
+    const p=x.p;return `<div class="row static"><div class="main"><div>${esc(uname(p.closeReq.by))} wants to close <span class="mono">${p.no}</span></div><div class="small muted">${esc(p.closeReq.reason)}</div></div><div class="side"><button class="btn sm primary" onclick="A.closeOk('${p.id}')">Okay, close it</button><button class="btn sm" onclick="A.closeNo('${p.id}')">Keep open</button></div></div>`;
+  }).join('');
+  const open=visibleReqs().filter(isOpen).length, openPO=visiblePOs().filter(p=>p.status==='open').length;
+  const monthStart=new Date(new Date().getFullYear(),new Date().getMonth(),1).getTime();
+  const spend=visiblePOs().filter(p=>p.createdAt>=monthStart).reduce((s,p)=>s+poValue(p),0);
+  const dlg=u.role==='trio'?(delegateOf(u.id)?`<p class="note">Your approvals are handed to <b>${esc(uname(delegateOf(u.id)))}</b> until ${fmtD(S.deleg[u.id].until)}. <button class="linkbtn" onclick="A.go('settings')">Change</button></p>`:actingFor(u.id).length>1?`<p class="note info">You are also approving for ${actingFor(u.id).slice(1).map(uname).join(', ')} while they travel.</p>`:''):'';
+  let extra='';
+  if(u.role==='store'){
+    const mine=visibleReqs().filter(isOpen).filter(r=>!canAct(r)).sort(sortUrgent);
+    const exp=visiblePOs().filter(p=>p.status==='open');
+    extra=`<section class="sec"><div class="head"><h2>${t('mine')}</h2><button class="btn primary" onclick="A.go('newreq')">${t('newreq')}</button></div><div class="list">${mine.map(reqRow).join('')||'<p class="empty">Nothing in progress.</p>'}</div></section>
+    <section class="sec"><h2>${t('expected')}</h2><div class="list">${exp.map(poRow).join('')||'<p class="empty">No open purchase orders.</p>'}</div></section>`;
+  }
+  return `<div class="head"><div><h1>${greet()}, ${esc(u.name.split(',')[0])}</h1><p class="muted">${fmtD(now())}</p></div></div>
+  ${dlg}
+  <div class="tiles"><div class="tile"><div class="n">${pend.length}</div><div class="l">${t('waiting')}</div></div><div class="tile"><div class="n">${open}</div><div class="l">Open requisitions</div></div><div class="tile"><div class="n">${openPO}</div><div class="l">Open purchase orders</div></div>${u.role!=='store'?`<div class="tile"><div class="n">${rs(spend)}</div><div class="l">Ordered this month</div></div>`:''}</div>
+  <section class="sec"><div class="head"><h2>${t('waiting')}</h2><span class="small muted">Most urgent first</span></div><div class="list">${rows||'<p class="empty">All clear. Nothing is waiting for you.</p>'}</div></section>
+  ${extra}`;
+}
+function greet(){const h=new Date().getHours();return h<12?'Good morning':h<17?'Good afternoon':'Good evening'}
+
+/* ---------- new requisition ---------- */
+function blankItem(sc){return {id:uid(),name:'',orig:'',qty:'',unit:'',subUnit:'',cat:'',brand:'',spec:'',specOrig:'',photo:'',areaType:site(sc).type==='mfg'?'':'entire',areaName:'',areaDesc:''}}
+function newDraft(){const sc=me().site;const d=new Date(now()+3*D);return {deadline:d.toISOString().slice(0,10),items:[blankItem(sc)]}}
+function unitOptions(sel){const all=[...S.units.map(u=>[u,u]),...S.unitsPending.map(u=>[u,u+' (new)'])];return `<option value="">Choose</option>`+all.map(([v,l])=>`<option value="${esc(v)}" ${v===sel?'selected':''}>${esc(l)}</option>`).join('')+`<option value="__new">+ Add a new unit</option>`}
+function newReqView(){
+  const u=me();if(u.role!=='store')return `<p class="muted">Only storekeepers raise requisitions.</p>`;
+  if(!draft)draft=newDraft();
+  const sc=u.site,mfg=site(sc).type==='mfg',areas=S.areas[sc]||[];
+  
+  const items=draft.items.map((it,i)=>`
+   <div class="box" id="ic_${i}">
+    <div class="boxh"><h3>Item ${i+1}</h3>${draft.items.length>1?`<button class="linkbtn small" onclick="A.dRemove(${i})">${t('remove')}</button>`:''}</div>
+    <div class="grid">
+      <div class="span2 combo"><label for="nm_${i}">${t('item')}</label><input id="nm_${i}" value="${esc(it.orig||it.name)}" autocomplete="off" role="combobox" aria-expanded="false" aria-controls="cl_${i}" oninput="A.dName(${i},this.value);A.combo(${i})" onfocus="A.combo(${i})" onblur="A.comboHide(${i})" onkeydown="A.comboKey(${i},event)" onchange="A.dNameDone(${i})" placeholder="${t('pickItem')}"><div class="combo-list" id="cl_${i}" role="listbox" hidden></div><span class="tr" id="tr_${i}">${it.orig?'English: '+esc(it.name):it.fromList?'From your item list':''}</span>${it.slipText?`<div class="qmatch ${it.slipSure?'':'amber'}" style="margin-top:2px"><span>Slip said: <b>${esc(it.slipText)}</b>${it.slipSure?'':' · please check this line'}</span></div>`:''}</div>
+      <label>${t('qty')}<input type="number" inputmode="decimal" min="0" step="any" value="${esc(it.qty)}" oninput="A.d(${i},'qty',this.value)"></label>
+      <label>${t('unit')}<select id="unit_${i}" onchange="A.dUnit(${i},this.value)">${unitOptions(it.unit)}</select><input id="nu_${i}" hidden placeholder="Type new unit and press Enter" onkeydown="if(event.key==='Enter')A.dNewUnit(${i},this.value)" onchange="A.dNewUnit(${i},this.value)"></label>
+      <label>${t('subunit')}<input value="${esc(it.subUnit)}" placeholder="e.g. coil of 90 m" oninput="A.d(${i},'subUnit',this.value)"></label>
+      <label>${t('category')}<select id="cat_${i}" onchange="A.d(${i},'cat',this.value)"><option value="">Choose</option>${catsFor(sc).map(c=>`<option ${c===it.cat?'selected':''}>${esc(c)}</option>`).join('')}</select><span class="hint" id="cs_${i}"></span></label>
+      <label>${t('brand')}<input value="${esc(it.brand)}" oninput="A.d(${i},'brand',this.value)"></label>
+      <label class="span2">${t('spec')}<textarea oninput="A.d(${i},'spec',this.value)" placeholder="Size, grade, colour, model">${esc(it.specOrig||it.spec)}</textarea></label>
+      <label>${t('photo')}<input type="file" accept="image/*" onchange="A.dPhoto(${i},this)">${it.photo?`<img class="thumb" src="${it.photo}" alt="Item photo">`:''}</label>
+    </div>
+    <div class="sec" style="gap:8px"><span class="small muted">${t('area')}${mfg?' (required)':''}</span>
+      <div class="radios"><label><input type="radio" name="ar_${i}" ${it.areaType==='entire'?'checked':''} onchange="A.dArea(${i},'entire')">${t('entire')}</label><label><input type="radio" name="ar_${i}" ${it.areaType==='specific'?'checked':''} onchange="A.dArea(${i},'specific')">${t('specific')}</label></div>
+      ${it.areaType==='specific'?`${areas.length?`<div class="pickrow">${areas.map((a,k)=>`<button type="button" class="pick" onclick="A.dPick(${i},${k})">${esc(a)}</button>`).join('')}</div>`:''}
+      <div class="grid"><label>${t('areaName')}<input id="an_${i}" value="${esc(it.areaName)}" oninput="A.d(${i},'areaName',this.value)" placeholder="e.g. Tower A"></label><label>${t('areaDesc')}<input value="${esc(it.areaDesc)}" oninput="A.d(${i},'areaDesc',this.value)" placeholder="e.g. 3rd floor slab casting"></label></div>`:''}
+    </div>
+   </div>`).join('');
+  return `<div class="head"><div><h1>${t('newreq')}</h1><p class="muted">${esc(site(sc).name)} · number is given when you send</p></div></div>
+  <div class="box slipbox"><div><h3>${t('slipTitle')}</h3><p class="small muted">${t('slipHint')}</p></div>
+    <div class="actions"><label class="btn primary" for="slipcam">${t('slipCam')}</label><input id="slipcam" class="vh" type="file" accept="image/*" capture="environment" onchange="A.slip(this)"><label class="btn" for="slipup">${t('slipUp')}</label><input id="slipup" class="vh" type="file" accept="image/*,application/pdf" multiple onchange="A.slip(this)"></div>
+    <div id="slipst" class="${tmp.slipMsg?.cls||''}" ${tmp.slipMsg?'':'hidden'}>${tmp.slipMsg?.html||''}</div></div>
+  <div class="box"><label style="max-width:260px">${t('deadline')}<input type="date" value="${draft.deadline}" onchange="draft.deadline=this.value"></label></div>
+  ${items}
+  <div class="actions"><button class="btn" onclick="A.dAdd()">+ ${t('addItem')}</button><span style="flex:1"></span><button class="btn primary" onclick="A.submit()">${t('submit')}</button></div>
+  <p class="err" id="ferr"></p>`;
+}
+
+/* ---------- requisitions list and detail ---------- */
+function reqsView(){
+  const u=me();
+  return `<div class="head"><h1>${t('reqs')}</h1>${u.role==='store'?`<button class="btn primary" onclick="A.go('newreq')">${t('newreq')}</button>`:''}</div>
+  <div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(170px,1fr))">
+    <label>Search<input value="${esc(filt.q)}" oninput="filt.q=this.value;A.listOnly()" placeholder="Number or item"></label>
+    <label>Stage<select onchange="filt.stage=this.value;A.listOnly()"><option value="">All stages</option>${Object.entries(STAGE).map(([k,s])=>`<option value="${k}" ${filt.stage===k?'selected':''}>${s.label}</option>`).join('')}</select></label>
+    ${u.role!=='store'?`<label>Project<select onchange="filt.site=this.value;A.listOnly()"><option value="">All projects</option>${S.sites.map(s=>`<option value="${s.code}" ${filt.site===s.code?'selected':''}>${esc(s.name)}</option>`).join('')}</select></label>`:''}
+  </div>
+  <div class="list" id="reqlist">${reqListHtml()}</div>`;
+}
+function reqListHtml(){
+  const q=filt.q.toLowerCase();
+  const list=visibleReqs().filter(r=>(!filt.stage||r.stage===filt.stage)&&(!filt.site||r.site===filt.site)&&(!q||r.no.toLowerCase().includes(q)||r.items.some(i=>(i.name+' '+i.orig).toLowerCase().includes(q))))
+    .sort((a,b)=>(isOpen(b)-isOpen(a))||a.deadline-b.deadline);
+  return list.map(reqRow).join('')||'<p class="empty">No requisitions match.</p>';
+}
+function tracker(r){
+  if(r.stage==='rejected')return '';
+  const f=[...flowFor(r.site),'approved'];const cur=r.stage==='clarify'?f.indexOf(r.returnTo):f.indexOf(r.stage);
+  return `<ol class="track">${f.map((s,i)=>`<li class="${r.stage==='approved'||i<cur?'done':i===cur?'cur':''}">${STAGE[s].short}${i===cur&&r.stage==='clarify'?' (sent back)':''}</li>`).join('')}</ol>`;
+}
+function itemsTable(r){
+  const u=me(),edit=r.stage==='clarify'&&u.role==='store'&&u.site===r.site;
+  return `<div class="tw"><table><thead><tr><th>#</th><th>Item</th><th class="num">Qty</th><th>Unit</th><th>Category</th><th>Brand</th><th>Area of usage</th>${u.role!=='store'?'<th class="num">Est. rate</th><th class="num">Est. value</th>':''}</tr></thead><tbody>
+  ${r.items.map((it,i)=>`<tr><td>${i+1}</td><td style="min-width:200px"><b>${esc(it.name)}</b>${it.orig?`<small>Hindi: ${esc(it.orig)}</small>`:''}${it.spec?`<small>${esc(it.spec)}</small>`:''}${it.photo?`<img class="thumb" src="${it.photo}" alt="Item photo" style="margin-top:4px">`:''}${(it.changes||[]).map(c=>`<span class="chg">${esc(c)}</span>`).join('')}
+   ${edit?`<div class="sec" style="gap:6px;margin-top:6px"><textarea placeholder="Add missing specification" oninput="A.editItem('${r.id}','${it.id}',this.value)">${esc(it.spec)}</textarea><input type="file" accept="image/*" onchange="A.editPhoto('${r.id}','${it.id}',this)"></div>`:''}</td>
+   <td class="num">${nf(it.qty)}</td><td>${esc(it.unit)}${it.subUnit?`<small>${esc(it.subUnit)}</small>`:''}</td><td>${esc(it.cat)}</td><td>${esc(it.brand)||'<span class="muted">Any</span>'}</td>
+   <td>${it.areaType==='specific'?`${esc(it.areaName)}<small>${esc(it.areaDesc)}</small>`:'Entire project'}</td>${u.role!=='store'?(()=>{const l=lastRate(it.name,r.site,r.id);return l?`<td class="num">${rsd(l.rate)}<small>last order ${fmtD(l.at)}</small></td><td class="num">${rs(l.rate*it.qty)}</td>`:'<td class="num muted small">No past order</td><td></td>'})():''}</tr>`).join('')}
+  </tbody></table></div>${(r.removed||[]).length?`<p class="small muted">Removed: ${r.removed.map(x=>`${esc(x.name)} (${nf(x.qty)} ${esc(x.unit)}) by ${esc(uname(x.by))}`).join('; ')}</p>`:''}`;
+}
+/* last purchase rate, estimates, rate-change flags, per-item vendor award */
+function lastRate(name,sc,exclReq){const ty=site(sc).type,n=String(name||'').toLowerCase();let best=null;
+  S.pos.forEach(p=>{if(site(p.site).type!==ty||p.reqId===exclReq)return;p.lines.forEach(l=>{if(l.name.toLowerCase()===n&&l.rate>0&&(!best||p.createdAt>best.at))best={rate:l.rate,unit:l.unit,at:p.createdAt,vendor:V(p.vendorId)?.name||'',po:p.no}})});return best}
+const rsd=x=>'₹'+(+x).toLocaleString('en-IN',Number.isInteger(+x)?{}:{minimumFractionDigits:2,maximumFractionDigits:2});
+function rateFlag(x,last){if(!x||!last)return '';const pct=(x-last.rate)/last.rate*100;if(Math.abs(pct)<0.5)return '<span class="rflag same">Same as last order</span>';return `<span class="rflag ${pct>0?'up':'down'}">${pct>0?'▲':'▼'} ${Math.abs(pct).toFixed(1)}% vs last ${rsd(last.rate)}</span>`}
+function rateChanges(r){const out=[];r.items.forEach(it=>{const last=lastRate(it.name,r.site,r.id);if(!last)return;(r.quotes[it.cat]||[]).forEach(q=>{const x=+q.rates[it.id];if(x>0){const pct=(x-last.rate)/last.rate*100;if(Math.abs(pct)>=0.5)out.push({it,q,x,last,pct})}})});return out}
+function estimate(r){let sum=0,have=0;r.items.forEach(it=>{const l=lastRate(it.name,r.site,r.id);if(l){sum+=l.rate*it.qty;have++}});return {sum,have,n:r.items.length}}
+function lowestQ(r,it){let b=null;(r.quotes[it.cat]||[]).forEach(q=>{const x=+q.rates[it.id];if(x>0&&(!b||x<+b.rates[it.id]))b=q});return b}
+function awardOf(r,it){const id=r.award?.[it.id];return (r.quotes[it.cat]||[]).find(q=>q.id===id&&+q.rates[it.id]>0)||lowestQ(r,it)}
+function awardSummary(r){const by={};let total=0;r.items.forEach(it=>{const q=awardOf(r,it);if(!q)return;const v=+q.rates[it.id]*it.qty*(1+(+q.gst||0)/100);total+=v;const n=V(q.vendorId)?.name||'Vendor';(by[n]=by[n]||{n:0,v:0});by[n].n++;by[n].v+=v});return {by,total}}
+const canChoose=r=>(r.stage==='final'&&canAct(r))||(r.stage==='issue'&&r.pmDecides&&me()?.role==='pm');
+function estLine(r){const e=estimate(r);return `<p class="small"><b>Estimated value: ${rs(e.sum)}</b> <span class="muted">before GST, at last order rates. ${e.have===e.n?'All items have a past rate.':`${e.n-e.have} of ${e.n} item${e.n>1?'s':''} ordered for the first time, not included.`}</span></p>`}
+function compareTable(r,cat,k){
+  const u=me(),its=r.items.filter(i=>i.cat===cat),qs=r.quotes[cat]||[];
+  if(!qs.length)return '<p class="muted small">No quotes yet.</p>';
+  const choose=canChoose(r),showAw=['issue','approved'].includes(r.stage)||choose,pmEdit=r.stage==='quotes'&&u.role==='pm';
+  const tot=qs.map(q=>quoteTotal(its,q)),min=Math.min(...tot);
+  return `<div class="tw"><table class="cmp"><thead><tr><th>Item</th><th class="num">Qty</th><th class="num">Last order</th>${qs.map(q=>`<th class="num">${esc(V(q.vendorId)?.name)}<small>${esc(q.brand)} · GST ${q.gst}%${q.files?.length?' · from file':''}</small>${q.contract?'<span class="chip info">Rate contract</span>':''}</th>`).join('')}<th>Cheapest vendor</th></tr></thead>
+  <tbody>${its.map(it=>{const rates=qs.map(q=>+q.rates[it.id]||0),pos=rates.filter(x=>x>0),m=pos.length?Math.min(...pos):0,last=lastRate(it.name,r.site,r.id),aw=awardOf(r,it);
+    const cheapest=qs.filter((q,j)=>rates[j]===m&&m>0).map(q=>V(q.vendorId)?.name);
+    return `<tr><td>${esc(it.name)}</td><td class="num">${nf(it.qty)} ${esc(it.unit)}</td>
+    <td class="num">${last?`${rsd(last.rate)}<small>${esc(last.vendor)}</small><small>${fmtD(last.at)}</small>`:'<span class="muted small">No past order</span>'}</td>
+    ${rates.map((x,j)=>{const q=qs[j],isAw=aw&&aw.id===q.id;return `<td class="num ${x===m&&x>0&&qs.length>1?'best':''} ${showAw&&isAw?'aw':''}">${x?rsd(x):'—'}${x?`<small>per ${esc(it.unit.replace(/s$/,''))} · = ${rs(x*it.qty)}</small>`:''}${rateFlag(x,last)}
+      ${choose&&x?`<label class="awpick"><input type="radio" name="aw_${it.id}" ${isAw?'checked':''} onchange="A.award('${r.id}','${it.id}','${q.id}')"> Order from here</label>`:showAw&&isAw?'<span class="chip ok">Chosen</span>':''}</td>`}).join('')}
+    <td><b>${cheapest.map(esc).join(', ')||'—'}</b>${cheapest.length?`<small>${rsd(m)} per ${esc(it.unit.replace(/s$/,''))}</small>`:''}</td></tr>`}).join('')}</tbody>
+  <tfoot><tr><td colspan="3">Total incl. GST (all items from this vendor)</td>${tot.map(x=>`<td class="num ${x===min&&qs.length>1?'best':''}">${rs(x)}${x===min&&qs.length>1?'<small>Lowest</small>':''}</td>`).join('')}<td></td></tr>
+  ${pmEdit?`<tr><td colspan="3"></td>${qs.map(q=>`<td class="num"><button class="linkbtn small" onclick="A.delQuote('${r.id}',${k},'${q.id}')">Remove</button></td>`).join('')}<td></td></tr>`:''}
+  </tfoot></table></div>`;
+}
+function awardBox(r){const {by,total}=awardSummary(r);const e=Object.entries(by);if(!e.length)return '';
+  return `<div class="box"><div class="boxh"><h3>${r.stage==='approved'?'Ordered from':canChoose(r)?'Your choice so far':'Chosen vendors'}</h3><span class="num"><b>${rs(total)}</b> <span class="small muted">incl. GST</span></span></div>
+  <div class="pickrow">${e.map(([n,x])=>`<span class="pick">${esc(n)} · ${x.n} item${x.n>1?'s':''} · ${rs(x.v)}</span>`).join('')}</div>
+  ${e.length>1?`<p class="small muted">${e.length} separate purchase orders will be issued, one per vendor.</p>`:''}</div>`}
+function changesBox(r){const ch=rateChanges(r);if(!ch.length||me()?.role==='store')return '';
+  return `<div class="note"><b>${ch.length} quoted rate${ch.length>1?'s differ':' differs'} from the last order</b><ul class="flaglist">${ch.map(c=>`<li>${esc(c.it.name)}: ${esc(V(c.q.vendorId)?.name)} quotes ${rsd(c.x)}, last order ${rsd(c.last.rate)} from ${esc(c.last.vendor)} on ${fmtD(c.last.at)} <b class="${c.pct>0?'up':'down'}">(${c.pct>0?'+':''}${c.pct.toFixed(1)}%)</b></li>`).join('')}</ul></div>`}
+
+
+function reqView(r){
+  if(!r)return '<p>Not found.</p>';
+  const u=me(),s=site(r.site),cats=catsOf(r);
+  const showQ=['quotes','final','issue','approved'].includes(r.stage)||Object.keys(r.quotes).length;
+  const pmQ=r.stage==='quotes'&&u.role==='pm';
+  let act='';
+  if(canAct(r)){
+    const o=ownerOf(r),behalf=o!=='pm'&&o!=='store'&&o!==u.id?`<p class="note info">You are acting on behalf of ${esc(uname(o))}, who has handed over approvals.</p>`:'';
+    if(r.stage==='ajay_ok'||r.stage==='ravi_ok')act=`${behalf}<div class="actions"><button class="btn primary" onclick="A.approve('${r.id}')">Approve</button><button class="btn" onclick="A.sendBack('${r.id}')">Send back for clarification</button><button class="btn danger" onclick="A.reject('${r.id}')">Reject</button></div>`;
+    if(r.stage==='quotes'){const sc2=smallCheck(r);act=(sc2.ok?`<p class="note good"><b>Small order:</b> ${rs(sc2.total)} incl. GST, and every rate is the same or lower than the last order. You can place this order yourself without Raunak's confirmation. Raunak will be informed.</p>`:'')}
+    if(r.stage==='quotes')act+=`<div class="actions">${smallCheck(r).ok?`<button class="btn primary" onclick="A.smallOrder('${r.id}')">Place order directly (under ${rs(SMALL_LIMIT)})</button>`:''}<button class="btn ${smallCheck(r).ok?'':'primary'}" onclick="A.toFinal('${r.id}')">Send comparison to Raunak</button><button class="btn" onclick="A.sendBack('${r.id}')">Send back to storekeeper</button><button class="btn danger" onclick="A.reject('${r.id}')">Reject</button></div>`;
+    if(r.stage==='final')act=`${behalf}<p class="small muted">Pick the vendor for each item in the tables above. The cheapest is picked already. The procurement manager then issues the POs, one per vendor.</p><div class="actions"><button class="btn primary" onclick="A.confirmVendors('${r.id}')">Confirm vendors</button><button class="btn" onclick="A.pmDecide('${r.id}')">Let procurement manager decide</button><button class="btn" onclick="A.moreQuotes('${r.id}')">Ask for more quotes</button><button class="btn" onclick="A.sendBack('${r.id}')">Send back to storekeeper</button><button class="btn danger" onclick="A.reject('${r.id}')">Reject</button></div>`;
+    if(r.stage==='issue'){const n=Object.keys(awardSummary(r).by).length;act=`${r.pmDecides?'<p class="note info">Raunak asked you to choose the vendors. Pick the vendor for each item in the tables above. The cheapest is picked already.</p>':`<p class="note good">${esc(uname(r.awardBy||'raunak'))} confirmed the vendors. Issue the purchase orders below.</p>`}${s.companies.length>1?`<label style="max-width:360px">Bill to company<select onchange="R('${r.id}').company=this.value;save()">${s.companies.map(c=>`<option ${c===(r.company||s.companies[0])?'selected':''}>${esc(c)}</option>`).join('')}</select></label>`:''}<div class="actions"><button class="btn primary" onclick="A.issuePOs('${r.id}')">Issue ${n>1?n+' purchase orders':'purchase order'}</button><button class="btn" onclick="A.sendBack('${r.id}')">Send back to storekeeper</button></div>`}
+    if(r.stage==='clarify')act=`<div class="sec"><p class="note"><b>${esc(uname(r.remarks.filter(x=>x.kind==='Sent back').slice(-1)[0]?.by))} asked:</b> ${esc(r.remarks.filter(x=>x.kind==='Sent back').slice(-1)[0]?.text)}</p><p class="small muted">Add the missing details in the items above, then reply.</p><label>Your reply<textarea id="reply" placeholder="e.g. Photo added. Wire is 12 gauge, 1 roll = 25 kg."></textarea></label><div class="actions"><button class="btn primary" onclick="A.resubmit('${r.id}')">Send reply and resubmit</button></div></div>`;
+  }
+  if(u.role==='store'&&u.site===r.site&&isOpen(r)&&r.stage!=='clarify')act+=`<div class="actions"><button class="btn urgent" onclick="A.urgent('${r.id}')">${t('urgent')}</button><span class="small muted">Sends a WhatsApp nudge to ${esc(ownerName(r))}</span></div>`;
+  const pos=S.pos.filter(p=>p.reqId===r.id);
+  const tl=[...r.remarks.map(x=>({at:x.at,by:x.by,text:`${x.kind}: ${x.text}`})),...S.audit.filter(a=>a.ref===r.no)].sort((a,b)=>b.at-a.at);
+  return `<div class="head"><div><button class="linkbtn small" onclick="A.go('reqs')">← ${t('reqs')}</button><h1 class="mono" style="font-size:1.3rem;margin-top:4px">${r.no}</h1>
+    <p class="muted">${esc(s.name)} · raised by ${esc(uname(r.createdBy))} on ${fmtDT(r.createdAt)}</p></div>
+    <div class="actions">${dueChip(r.deadline,!isOpen(r))}${stagePill(r)}</div></div>
+  ${tracker(r)}
+  ${isOpen(r)?`<p class="small">${t('withWho')}: <b>${esc(ownerName(r))}</b> <span class="muted">for ${dur(now()-r.stageSince)}${now()-r.stageSince>4*H?' · auto reminder sent':''}</span></p>`:''}
+  <section class="sec"><div class="head"><h2>Items</h2>${canEditItems(r)&&tmp.edit?.rid!==r.id?`<button class="btn sm" onclick="A.edStart('${r.id}')">Edit items</button>`:''}</div>${tmp.edit?.rid===r.id&&canEditItems(r)?editTable(r):itemsTable(r)}${u.role!=='store'?estLine(r):''}</section>
+  ${showQ?`<section class="sec"><div class="head"><h2>Quotes</h2><div class="actions">${pmQ?'<span class="small muted">Add as many quotes as you like for each category</span>':''}${u.role!=='store'&&Object.values(r.quotes).some(a=>a.length)?`<button class="btn sm" onclick="A.xlsx('${r.id}',this)">Download comparison (Excel)</button>`:''}</div></div>
+    ${contractBox(r)}${changesBox(r)}${cats.map((c,k)=>`<div class="box"><div class="boxh"><h3>${esc(c)}</h3>${pmQ||(u.id==='raunak'&&isOpen(r))?`<div class="actions"><button class="btn sm" onclick="A.sheet('${r.id}',${k})">Vendor sheet</button>${pmQ?`<button class="btn sm primary" onclick="A.addQuote('${r.id}',${k})">Add quote</button>`:''}</div>`:''}</div>${compareTable(r,c,k)}</div>`).join('')}${['final','issue','approved'].includes(r.stage)?awardBox(r):''}</section>`:''}
+  ${pos.length?`<section class="sec"><h2>Purchase orders</h2><div class="list">${pos.map(poRow).join('')}</div></section>`:''}
+  ${act?`<section class="sec">${act}</section>`:''}
+  <section class="sec"><h2>Remarks and history</h2><ul class="timeline">${tl.map(x=>`<li><span class="when">${fmtDT(x.at)}</span><span><b>${esc(uname(x.by))}</b> ${esc(x.text)}</span></li>`).join('')}</ul></section>`;
+}
+
+/* ---------- purchase orders ---------- */
+function poStatus(p){if(p.status==='closed')return '<span class="chip">Closed</span>';if(p.status==='done')return '<span class="chip ok">Fully received</span>';const rec=p.lines.some(l=>l.received>0);return `<span class="chip ${rec?'soon':'info'}">${rec?'Partly received':'Open'}</span>`}
+function poRow(p){return `<button class="row" onclick="A.go('po','${p.id}')"><div class="main"><div><span class="mono">${p.no}</span> <span class="muted">· ${esc(site(p.site).name)}</span></div><div class="small muted">${esc(V(p.vendorId)?.name)} · ${esc(p.cat)}</div></div><div class="side"><span class="small num">${rs(poValue(p))}</span>${poStatus(p)}</div></button>`}
+function posView(){const l=visiblePOs().sort((a,b)=>(a.status==='open'?0:1)-(b.status==='open'?0:1)||b.createdAt-a.createdAt);
+  return `<div class="head"><h1>${t('pos')}</h1></div><div class="list">${l.map(poRow).join('')||'<p class="empty">No purchase orders yet. They are created when Raunak gives final approval.</p>'}</div>`}
+function poView(p){
+  if(!p)return '<p>Not found.</p>';
+  const u=me(),s=site(p.site),v=V(p.vendorId);
+  const sub=p.lines.reduce((a,l)=>a+l.qty*l.rate,0),gst=p.lines.reduce((a,l)=>a+l.qty*l.rate*l.gst/100,0);
+  const myStore=u.role==='store'&&u.site===p.site;
+  let act='';
+  if(p.status==='open'){
+    if(myStore)act+=`<button class="btn primary" onclick="A.receipt('${p.id}')">Record material received</button><button class="btn" onclick="A.qtyAsk('${p.id}')">Request quantity change</button><button class="btn" onclick="A.closeSelf('${p.id}')">Close rest as not required</button>`;
+    if((u.role==='pm'||u.role==='trio')&&p.closeReq?.status!=='pending')act+=`<button class="btn" onclick="A.closeAsk('${p.id}')">Request to close this PO</button>`;
+  }
+  const qc=S.qty.filter(q=>q.poId===p.id);
+  return `<div class="head"><div><button class="linkbtn small" onclick="A.go('pos')">← ${t('pos')}</button><h1 class="mono" style="font-size:1.3rem;margin-top:4px">${p.no}</h1><p class="muted">From requisition <button class="linkbtn" onclick="A.go('req','${p.reqId}')">${p.reqNo}</button></p></div><div class="actions">${poStatus(p)}</div></div>
+  ${p.closeReq?.status==='pending'?`<p class="note">${esc(uname(p.closeReq.by))} asked to close this PO: "${esc(p.closeReq.reason)}". Waiting for the storekeeper to okay it.</p>`:''}
+  ${p.status==='closed'?`<p class="note info">Closed. ${esc(p.closeNote)}</p>`:''}
+  ${act?`<div class="actions">${act}</div>`:''}
+  <div class="podoc">
+    <div class="lh"><div><div class="name">KAILASHA GROUP</div><div class="small muted">Siliguri, West Bengal</div></div><div style="text-align:right"><div style="font-weight:600;letter-spacing:.08em">PURCHASE ORDER</div><div class="mono">${p.no}</div><div class="small muted">${fmtD(p.createdAt)}</div></div></div>
+    <div class="pometa">
+      <div><h4>Bill to</h4>${esc(p.company)}<br><span class="muted">${esc(coInfo(p.company).address||'')}${coInfo(p.company).address?'<br>':''}GSTIN: ${esc(coInfo(p.company).gstin||'to be added')}</span></div>
+      <div><h4>Vendor</h4>${esc(v?.name)}<br><span class="muted">GSTIN: ${esc(v?.gstin||'not given')}<br>${esc(v?.phone)}</span></div>
+      <div><h4>Deliver to</h4>${esc(s.name)}<br><span class="muted">Ref: ${p.reqNo} · ${esc(p.cat)}</span></div>
+    </div>
+    <div class="tw"><table><thead><tr><th>#</th><th>Item</th><th class="num">Qty</th><th class="num">Rate</th><th class="num">GST</th><th class="num">Amount</th><th class="num">Received</th></tr></thead>
+    <tbody>${p.lines.map((l,i)=>`<tr><td>${i+1}</td><td>${esc(l.name)}<small>${esc(l.brand)}${l.subUnit?' · '+esc(l.subUnit):''}</small></td><td class="num">${nf(l.qty)} ${esc(l.unit)}</td><td class="num">${'₹'+nf(l.rate)}</td><td class="num">${l.gst}%</td><td class="num">${rs(l.qty*l.rate*(1+l.gst/100))}</td><td class="num">${nf(l.received)}<small>${l.received<l.qty?nf(l.qty-l.received)+' pending':'complete'}</small></td></tr>`).join('')}</tbody>
+    <tfoot><tr><td colspan="5">Taxable value</td><td class="num">${rs(sub)}</td><td></td></tr><tr><td colspan="5">GST</td><td class="num">${rs(gst)}</td><td></td></tr><tr><td colspan="5">Total</td><td class="num">${rs(sub+gst)}</td><td></td></tr></tfoot></table></div>
+    <div><h4 class="small muted" style="margin:0 0 4px">Terms and conditions</h4><ol class="terms">${S.terms.map(x=>`<li>${esc(x)}</li>`).join('')}</ol></div>
+    <div class="signs"><div>Prepared by<br><b>Procurement Manager</b></div><div>Vendor confirmed by<br><b>${p.awardBy==='pm10k'?'Procurement Manager (small order, under ₹10,000 rule)':p.awardBy==='pm'?'Procurement Manager (asked by Raunak)':esc(uname(p.awardBy||'raunak'))}</b><br><span class="small muted">Issued in app on ${fmtDT(p.createdAt)}</span></div><div>Vendor acceptance</div></div>
+  </div>
+  <p class="hint">In the full version this downloads as a PDF on the Kailasha Group letterhead, ready to send on WhatsApp or email.</p>
+  ${qc.length?`<section class="sec"><h2>Quantity changes</h2><div class="list">${qc.map(q=>`<div class="row static"><div class="main">${esc(p.lines[q.line].name)}: ${nf(q.from)} to ${nf(q.to)} (${q.pct>0?'+':''}${q.pct}%)<div class="small muted">${esc(q.reason)}</div></div><span class="chip ${q.status==='approved'?'ok':q.status==='declined'?'bad':'soon'}">${{pm:'With procurement manager',trio:'With '+uname(q.trio),approved:'Approved',declined:'Declined'}[q.status]}</span></div>`).join('')}</div></section>`:''}
+  <section class="sec"><h2>Receipts</h2><div class="list">${p.receipts.map(rc=>`<div class="row static"><div class="main">${rc.lines.map((x,i)=>x?`${nf(x)} ${esc(p.lines[i].unit)} ${esc(p.lines[i].name)}`:'').filter(Boolean).join(', ')}<div class="small muted">${fmtDT(rc.at)} · ${esc(uname(rc.by))} · challan ${esc(rc.challan||'not given')}</div></div><span class="chip info">Tally: waiting for connector</span></div>`).join('')||'<p class="empty">Nothing received yet.</p>'}</div></section>`;
+}
+
+/* ---------- stock ---------- */
+function stockSite(){const u=me();return u.role==='store'?u.site:(tmp.stockSite||'KAL')}
+function stockView(){
+  const sc=stockSite(),u=me(),items=S.stock.filter(s=>s.site===sc),mv=S.moves.filter(m=>m.site===sc).slice(0,15);
+  return `<div class="head"><div><h1>${t('stock')}</h1><p class="muted">${esc(site(sc).name)}</p></div>
+    ${u.role!=='store'?`<label style="min-width:200px">Project<select onchange="tmp.stockSite=this.value;render()">${S.sites.map(s=>`<option value="${s.code}" ${s.code===sc?'selected':''}>${esc(s.name)}</option>`).join('')}</select></label>`:''}</div>
+  <div class="box"><label>Scan barcode<input id="scan" placeholder="Point a USB or Bluetooth scanner here, or type the code and press Enter" onkeydown="if(event.key==='Enter')A.scan(this.value)"></label><p class="hint">Phone camera scanning comes in the full version. USB and Bluetooth scanners work here already because they type like a keyboard. Try <span class="mono">${items[0]?.barcode||'KAL-0001'}</span>.</p></div>
+  <div class="tw"><table><thead><tr><th>Item</th><th>Barcode</th><th class="num">In hand</th><th></th></tr></thead><tbody>
+  ${items.map(s=>`<tr><td>${esc(s.name)}<small>${esc(s.cat)}</small></td><td class="mono">${s.barcode}</td><td class="num"><b>${nf(s.qty)}</b> ${esc(s.unit)}</td><td style="white-space:nowrap;text-align:right">${u.role==='store'?`<button class="btn sm" onclick="A.issue('${s.id}','out')">Issue</button> <button class="btn sm" onclick="A.issue('${s.id}','back')">Return</button> `:''}<button class="btn sm" onclick="A.label('${s.id}')">Label</button></td></tr>`).join('')||'<tr><td colspan="4" class="muted">No stock recorded for this project yet. Stock goes up automatically when material is received against a PO.</td></tr>'}
+  </tbody></table></div>
+  ${u.role==='store'?`<div class="actions"><button class="btn" onclick="A.stockNew()">+ Add stock item</button></div>`:''}
+  <section class="sec"><h2>Recent movements</h2><div class="list">${mv.map(m=>{const s=S.stock.find(x=>x.id===m.itemId);return `<div class="row static"><div class="main">${esc(s?.name)}<div class="small muted">${fmtDT(m.at)} · ${esc(uname(m.by))} · ${esc(m.note)}</div></div><span class="chip ${m.kind==='Issued'?'soon':m.kind==='Returned'?'info':'ok'}">${m.kind} ${nf(m.qty)} ${esc(s?.unit)}</span></div>`}).join('')||'<p class="empty">No movements yet.</p>'}</div></section>`;
+}
+
+/* ---------- vendors ---------- */
+function vendorsView(){
+  const q=(tmp.vq||'').toLowerCase();const l=S.vendors.filter(v=>!q||(v.name+v.cats+v.city+v.gstin).toLowerCase().includes(q));
+  return `<div class="head"><h1>${t('vendors')}</h1><button class="btn primary" onclick="A.vendorNew()">+ Add vendor</button></div>
+  <label>Search<input value="${esc(tmp.vq||'')}" oninput="tmp.vq=this.value;document.getElementById('vt').innerHTML=vendorRows()" placeholder="Name, category, city or GSTIN"></label>
+  <p class="hint">These are sample vendors. Your real list will come from the Tally ledger export.</p>
+  <div class="tw"><table><thead><tr><th>Vendor</th><th>Phone</th><th>GSTIN</th><th>Supplies</th></tr></thead><tbody id="vt">${vendorRows()}</tbody></table></div>`;
+}
+function vendorRows(){const q=(tmp.vq||'').toLowerCase();return S.vendors.filter(v=>!q||(v.name+v.cats+v.city+v.gstin).toLowerCase().includes(q)).map(v=>`<tr><td><b>${esc(v.name)}</b><small>${esc(v.contact)} · ${esc(v.city)}</small></td><td class="mono">${esc(v.phone)}</td><td class="mono">${esc(v.gstin)}</td><td>${esc(v.cats)}${Object.keys((S.aliases||{})[v.id]||{}).length?`<small>${Object.keys(S.aliases[v.id]).length} item name matches remembered</small>`:''}</td></tr>`).join('')||'<tr><td colspan="4" class="muted">No vendors match.</td></tr>'}
+
+/* ---------- reports ---------- */
+function reportsView(){
+  const tab=tmp.rt||'site',pos=S.pos;
+  const g={};
+  pos.forEach(p=>p.lines.forEach(l=>{const v=l.qty*l.rate*(1+l.gst/100);const k=tab==='site'?site(p.site).name:tab==='cat'?p.cat:l.name;g[k]=(g[k]||0)+v}));
+  const rows=Object.entries(g).sort((a,b)=>b[1]-a[1]),max=rows[0]?.[1]||1,total=rows.reduce((s,x)=>s+x[1],0);
+  return `<div class="head"><div><h1>${t('reports')}</h1><p class="muted">Value of purchase orders issued, including GST</p></div></div>
+  <div class="seg" style="max-width:420px">${[['site','By project'],['cat','By category'],['item','By item']].map(([k,l])=>`<button class="${tab===k?'on':''}" onclick="tmp.rt='${k}';render()">${l}</button>`).join('')}</div>
+  <div class="box">${rows.map(([k,v])=>`<div class="barrow"><span>${esc(k)}</span><div class="bar" style="width:${(v/max*100).toFixed(1)}%"></div><span class="num">${rs(v)}</span></div>`).join('')||'<p class="muted">No purchase orders yet.</p>'}
+  <div class="barrow" style="border:0;font-weight:600"><span>Total</span><span></span><span class="num">${rs(total)}</span></div></div>`;
+}
+
+/* ---------- activity log, outbox ---------- */
+function auditView(){const q=(tmp.aq||'').toLowerCase();
+  return `<div class="head"><div><h1>${t('audit')}</h1><p class="muted">Every action, with who did it and when</p></div></div>
+  <label>Search<input value="${esc(tmp.aq||'')}" oninput="tmp.aq=this.value;document.getElementById('al').innerHTML=auditRows()" placeholder="Person, number or action"></label>
+  <ul class="timeline" id="al">${auditRows()}</ul>`}
+function auditRows(){const q=(tmp.aq||'').toLowerCase();return S.audit.filter(a=>!q||(uname(a.by)+a.text+a.ref).toLowerCase().includes(q)).slice(0,200).map(a=>`<li><span class="when">${fmtDT(a.at)}</span><span><b>${esc(uname(a.by))}</b> ${esc(a.text)} ${a.ref?`<span class="mono muted">${a.ref}</span>`:''}</span></li>`).join('')}
+function outboxView(){
+  return `<div class="head"><div><h1>${t('outbox')}</h1><p class="muted">Messages the website will send on WhatsApp once AiSensy is connected</p></div></div>
+  <p class="note info">Nothing here has been sent. This list shows what would go out: reminders after 4 hours, urgent nudges, quote requests to vendors and PO updates.</p>
+  <div class="list">${S.outbox.map(m=>`<div class="row static"><div class="main"><div class="small muted">To ${esc(m.to)} · ${fmtDT(m.at)}</div>${esc(m.text)}</div><span class="chip ${m.kind==='Urgent nudge'?'soon':'info'}">${esc(m.kind)}</span></div>`).join('')||'<p class="empty">No messages yet.</p>'}</div>`;
+}
+
+/* ---------- settings (approvers) ---------- */
+function areaSuggestions(){const out=[];for(const [sc,m] of Object.entries(S.areaCounts))for(const [n,c] of Object.entries(m))if(c>=2&&!(S.areas[sc]||[]).includes(n)&&!S.areaDismissed.includes(sc+'|'+n))out.push({sc,n,c});return out}
+function settingsView(){
+  const u=me(),others=S.users.filter(x=>x.role==='trio'&&x.id!==u.id),d=S.deleg[u.id],sug=areaSuggestions();
+  const trio=S.users.filter(x=>x.role==='trio');
+  return `<div class="head"><h1>${t('settings')}</h1></div>
+  <section class="box"><h2>Hand over my approvals</h2><p class="small muted">Use this when you travel. The person you choose can approve on your behalf until the date you set. Everything they approve is logged with both names.</p>
+    <div class="grid"><label>Hand over to<select id="dg_to">${others.map(o=>`<option value="${o.id}" ${d?.to===o.id?'selected':''}>${esc(o.name)}</option>`).join('')}</select></label><label>Until (end of day)<input type="date" id="dg_until" value="${d?new Date(d.until).toISOString().slice(0,10):new Date(now()+3*D).toISOString().slice(0,10)}"></label></div>
+    <div class="actions"><button class="btn primary" onclick="A.deleg()">Save</button>${delegateOf(u.id)?`<button class="btn" onclick="A.delegOff()">Take approvals back</button>`:''}</div>
+    <p class="small">${trio.map(x=>delegateOf(x.id)?`${esc(x.name)} → ${esc(uname(delegateOf(x.id)))} until ${fmtD(S.deleg[x.id].until)}`:'').filter(Boolean).join('<br>')||'<span class="muted">Nobody has handed over approvals right now.</span>'}</p></section>
+  <section class="box"><h2>Quick-pick areas</h2><p class="small muted">Areas that storekeepers type often are suggested here. Once Raunak approves one, it shows as a one-tap choice on the requisition form.</p>
+    ${sug.length?`<div class="list">${sug.map(x=>`<div class="row static"><div class="main">${esc(x.n)}<div class="small muted">${esc(site(x.sc).name)} · used ${x.c} times</div></div><div class="side">${u.id==='raunak'?`<button class="btn sm primary" data-s="${x.sc}" data-n="${esc(x.n)}" onclick="A.areaOk(this)">Approve</button><button class="btn sm" data-s="${x.sc}" data-n="${esc(x.n)}" onclick="A.areaNo(this)">Ignore</button>`:'<span class="chip soon">Waiting for Raunak</span>'}</div></div>`).join('')}</div>`:'<p class="small muted">No new suggestions.</p>'}
+    <p class="small">${S.sites.map(s=>`<b>${esc(s.name)}:</b> ${(S.areas[s.code]||[]).map(esc).join(', ')||'<span class="muted">none yet</span>'}`).join('<br>')}</p></section>
+  <section class="box"><h2>Categories</h2>
+    ${[['re','Real estate projects'],['mfg','Kaveri Agro (beverage)']].map(([k,l])=>`<div class="sec" style="gap:8px"><h3>${l}</h3><div class="pickrow">${S.cats[k].map(c=>`<span class="pick">${esc(c)} <button class="linkbtn" aria-label="Remove ${esc(c)}" data-k="${k}" data-c="${esc(c)}" onclick="A.catDel(this)">×</button></span>`).join('')}</div><div class="actions"><input id="nc_${k}" placeholder="New category" style="max-width:260px"><button class="btn sm" onclick="A.catAdd('${k}')">Add</button></div></div>`).join('')}</section>
+  <section class="box"><h2>Billing companies and site addresses</h2><p class="small muted">Shown on purchase orders and on quotation requests sent to vendors.</p>
+    ${S.sites.map(st=>`<div class="sec" style="gap:8px"><h3>${esc(st.name)}</h3><label>Site address (delivery)<input value="${esc(st.address||'')}" data-s="${st.code}" onchange="A.siteAddr(this)" placeholder="Full delivery address"></label>
+      ${st.companies.map((c,ci)=>`<div class="grid"><label>Billing company ${st.companies.length>1?ci+1:''}<input value="${esc(c)}" data-s="${st.code}" data-i="${ci}" onchange="A.coName(this)"></label><label>GSTIN<input value="${esc(coInfo(c).gstin||'')}" maxlength="15" style="text-transform:uppercase" data-c="${esc(c)}" onchange="A.coField(this,'gstin')"></label><label class="span2">Company address<input value="${esc(coInfo(c).address||'')}" data-c="${esc(c)}" onchange="A.coField(this,'address')"></label></div>`).join('')}</div>`).join('')}</section>
+  <section class="box"><h2>Item list</h2><p class="small">${S.items.filter(x=>x.type==='re').length} real estate items and ${S.items.filter(x=>x.type==='mfg').length} Kaveri Agro items. Storekeepers pick from this list, and new items they type are added when the requisition is sent. Your Tally stock items export will fill it in properly.</p></section>
+  <section class="box"><h2>Units</h2><p class="small">${S.units.map(esc).join(', ')}</p>${S.unitsPending.length?`<p class="small muted">New units waiting for their first approved PO: ${S.unitsPending.map(esc).join(', ')}</p>`:''}</section>
+  <section class="box"><div class="boxh"><h2>People</h2><button class="btn sm" onclick="A.userNew()">+ Add person</button></div>
+    <div class="tw"><table><thead><tr><th>Name</th><th>Mobile</th><th>Role</th></tr></thead><tbody>${S.users.map(x=>`<tr><td>${esc(x.name)}</td><td class="mono">${esc(x.mobile)}</td><td>${roleName(x)}</td></tr>`).join('')}</tbody></table></div></section>
+  <section class="box"><h2>Tally ERP 9 sync</h2><p class="small muted">Each receipt recorded here is queued for Tally. A small connector on the Tally computer will pick these up and post them automatically, and it will catch up if the computer was offline.</p>
+    <div class="list">${S.tally.map(x=>`<div class="row static"><div class="main">${esc(x.text)}<div class="small muted">${x.po} · ${esc(x.vendor)} · ${fmtDT(x.at)}</div></div><span class="chip soon">${esc(x.status)}</span></div>`).join('')||'<p class="empty">Queue is empty.</p>'}</div></section>
+  <section class="box"><h2>Purchase order terms</h2><label>One term per line<textarea id="terms" style="min-height:120px" onchange="S.terms=this.value.split('\\n').map(s=>s.trim()).filter(Boolean);save();toast('Terms saved')">${esc(S.terms.join('\n'))}</textarea></label></section>`;
+}
+
+/* ---------- actions ---------- */
+const A={};
+A.go=(v,id)=>{if(tmp.edit&&!(v==='req'&&id===tmp.edit.rid))tmp.edit=null;view={v,id:id||null};if(v!=='newreq')tmp.slipMsg=null;if(v==='newreq'&&!draft&&me()?.role==='store')draft=newDraft();A.close();render();window.scrollTo(0,0)};
+A.close=()=>{const m=document.getElementById('modal');m.hidden=true;m.innerHTML=''};
+A.listOnly=()=>{document.getElementById('reqlist').innerHTML=reqListHtml()};
+A.lang=l=>{S.lang=l;render()};
+A.logout=()=>{S.me=null;lg={mode:'pw',otp:null,mob:''};draft=null;view={v:'home'};render()};
+A.quick=id=>{S.me=id;draft=null;view={v:'home'};log('Logged in','',id);render()};
+A.lgMode=m=>{lg.mob=val('lg_mob');lg.mode=m;render()};
+const findMob=()=>{const m=val('lg_mob').replace(/\D/g,'');lg.mob=m;return S.users.find(u=>u.mobile===m)};
+const lgErr=m=>{const e=document.getElementById('lg_err');if(e)e.textContent=m};
+A.loginPw=()=>{const u=findMob();if(!u)return lgErr('No one is registered with this mobile number.');if(val('lg_pw')!==u.pass)return lgErr('Wrong password. Try again, or log in with a WhatsApp code.');A.quick(u.id)};
+A.sendOtp=()=>{const u=findMob();if(!u)return lgErr('No one is registered with this mobile number.');lg.otp=String(Math.floor(100000+Math.random()*900000));send([u.id],`Your Kailasha login code is ${lg.otp}. It expires in 10 minutes.`,'Login code');render()};
+A.loginOtp=()=>{const u=findMob();if(!u)return lgErr('No one is registered with this mobile number.');if(val('lg_otp').trim()!==lg.otp)return lgErr('That code does not match. Check WhatsApp and try again.');lg.otp=null;A.quick(u.id)};
+A.resetAsk=()=>modal(`<h2>Reset sample data?</h2><p>Everything you changed in this preview on this device goes back to the starting sample.</p><div class="mact"><button class="btn" onclick="A.close()">Cancel</button><button class="btn danger" onclick="A.reset()">Reset</button></div>`);
+A.reset=()=>{const m=S.me;S=seed();S.me=m;draft=null;A.close();view={v:'home'};render();toast('Sample data reset')};
+
+/* draft editing */
+A.d=(i,f,v)=>{draft.items[i][f]=v;if(f==='spec'){draft.items[i].specOrig=hasHi(v)?v:'';draft.items[i].spec=toEn(v)}};
+/* Handwritten requisition slip -> requisition lines */
+function shrinkImg(blob,max,q){return new Promise((ok,no)=>{const u=URL.createObjectURL(blob);const img=new Image();img.onload=()=>{const sc=Math.min(1,max/Math.max(img.width,img.height));const c=document.createElement('canvas');c.width=Math.round(img.width*sc);c.height=Math.round(img.height*sc);const g=c.getContext('2d');g.fillStyle='#fff';g.fillRect(0,0,c.width,c.height);g.drawImage(img,0,0,c.width,c.height);URL.revokeObjectURL(u);c.toBlob(b=>ok({blob:b,url:c.toDataURL('image/jpeg',.7)}),'image/jpeg',q)};img.onerror=()=>{URL.revokeObjectURL(u);no({code:'image_rejected'})};img.src=u})}
+function slipPrompt(sc){const s=site(sc),master=masterFor(sc);
+  return `A storekeeper at ${s.name} (Kailasha Group, Siliguri, India; ${s.type==='mfg'?'a beverage factory':'a real estate construction site'}) photographed a handwritten material requisition slip. It may be in Hindi, English or a mix, may use local words (e.g. "sariya" = TMT bar, "gitti" = stone chips, "balu" = sand, "bora/bori" = bags) and abbreviations. Read every line and turn it into requisition items.
+
+Our item list (prefer these exact names when the slip means the same item):
+${JSON.stringify(master.map(x=>({name:x.name,unit:x.unit,sub_unit:x.subUnit||undefined,category:x.cat})).slice(0,400))}
+
+Units we use: ${JSON.stringify([...S.units,...S.unitsPending])}
+Categories: ${JSON.stringify(catsFor(sc))}
+
+For each line on the slip give:
+- slip_text: the line as written (keep Hindi as Hindi).
+- list_name: the exact name from our item list if it is clearly the same item, else null.
+- name: a clear English item name (use list_name if given; otherwise write size, grade and type in English, e.g. "TMT bar 12 mm").
+- qty: number. unit: one of our units if possible (convert spelling, e.g. "bori" -> "bags", "pcs" -> "nos"). sub_unit: packing if written (e.g. "bag of 50 kg"), else "".
+- category: one of our categories.
+- brand: if written, else "". spec: any size, grade, colour or note, else "".
+- area: the place of use if written (e.g. "Tower A 3rd floor slab"), else "".
+- sure: true if you read the line clearly and matched it confidently; false if handwriting was unclear, the quantity or unit is a guess, or the item is ambiguous.
+Also: needed_by as YYYY-MM-DD if a date is written (assume year ${YEAR}), else "". notes: one short plain sentence if something on the slip could not be read, else "".
+
+Reply with JSON only, in this shape:
+{"needed_by":"","items":[{"slip_text":"","list_name":null,"name":"","qty":0,"unit":"","sub_unit":"","category":"","brand":"","spec":"","area":"","sure":true}],"notes":""}`}
+const slipErr=e=>({not_granted:'Reading was not allowed, so please fill the items by hand.',rate_limited:'Too many readings just now. Wait a minute and try again.',image_rejected:'That picture could not be read. Take a clearer photo in good light.',lib:'Could not open the PDF reader. Check the internet connection.'})[e?.code]||'Could not read the slip. Please try a clearer photo, or fill the items by hand.';
+A.slip=async input=>{
+  const files=[...(input.files||[])];input.value='';if(!files.length)return;
+  const st=document.getElementById('slipst'),sc=me().site;st.hidden=false;
+  if(!SAMPLE||!SAMPLE_IMG){st.className='note';st.textContent='Reading slips is not available in this view. Please fill the items by hand.';return}
+  else{st.className='note info';st.textContent='Reading the slip. This usually takes 20 to 60 seconds…'}
+  try{
+    const send=[];
+    for(const f of files){
+      if(f.type==='application/pdf'||/\.pdf$/i.test(f.name)){const x=await readPdf(f,true);send.push(...x.imgs)}
+      else if(f.type.startsWith('image/')){send.push((await shrinkImg(f,1800,.85)).blob)}
+    }
+    if(!send.length)return;
+    const res=await SAMPLE.json(slipPrompt(sc),{images:send.slice(0,SAMPLE_LIM||5)});
+    if(view.v!=='newreq'||!draft)return;
+    const master=masterFor(sc),units=[...S.units,...S.unitsPending],cats=catsFor(sc);
+    const got=(Array.isArray(res?.items)?res.items:[]).slice(0,60).map(x=>{
+      const m=x?.list_name?master.find(y=>y.name.toLowerCase()===String(x.list_name).toLowerCase()):null;
+      const unit=units.find(u=>u.toLowerCase()===String(x?.unit||'').toLowerCase())||(m?.unit||'');
+      const cat=cats.includes(x?.category)?x.category:(m?.cat||'');const area=String(x?.area||'').trim();
+      return {...blankItem(sc),name:String(m?.name||x?.name||'').slice(0,160),orig:'',qty:+x?.qty>0?String(+x.qty):'',unit,subUnit:String(x?.sub_unit||m?.subUnit||'').slice(0,80),cat,brand:String(x?.brand||m?.brand||'').slice(0,80),spec:String(x?.spec||'').slice(0,300),
+        areaType:area?'specific':(site(sc).type==='mfg'?'':'entire'),areaName:area.slice(0,80),areaDesc:'',fromList:!!m,slipText:String(x?.slip_text||'').slice(0,200),slipSure:x?.sure===true&&!!unit&&!!cat&&+x?.qty>0}});
+    if(!got.length){st.className='note';st.textContent='No items could be read from this slip. Please fill them by hand.';return}
+    draft.items=[...draft.items.filter(i=>i.name.trim()),...got];
+    if(/^\d{4}-\d{2}-\d{2}$/.test(res?.needed_by||''))draft.deadline=res.needed_by;
+    const unsure=got.filter(i=>!i.slipSure).length;
+    tmp.slipMsg={cls:unsure?'note':'note good',html:`Read ${got.length} item${got.length>1?'s':''} from the slip. Check each one before sending.`+(unsure?` <b>${unsure} line${unsure>1?'s are':' is'} marked in amber</b> because the writing or quantity was unclear.`:'')+(res?.notes?`<br>${esc(String(res.notes).slice(0,300))}`:'')};
+    render();
+  }catch(e){const s2=document.getElementById('slipst');if(s2){s2.className='note';s2.textContent=slipErr(e)}}
+};
+
+/* Approvers edit items while approving */
+const canEditItems=r=>me()?.role==='trio'&&canAct(r)&&['ravi_ok','ajay_ok','final'].includes(r.stage);
+function editTable(r){const e=tmp.edit,sc=r.site,fin=r.stage==='final';
+  const unitOpts=sel=>[...S.units,...S.unitsPending].map(x=>`<option ${x===sel?'selected':''}>${esc(x)}</option>`).join('');
+  return `<div class="box editbox"><div class="boxh"><h3>Editing items</h3><span class="small muted">${fin?'Quotes are final, so only quantities can change here':'The storekeeper will see every change'}</span></div>
+  <div class="tw"><table><thead><tr><th>Item</th><th class="num">Qty</th><th>Unit</th><th></th></tr></thead><tbody>
+  ${e.items.map((it,i)=>`<tr class="${it._del?'del':''}"><td><b>${esc(it.name)}</b><small>${esc(it.cat)}${it._new?' · new':''}</small></td>
+   <td><input type="number" inputmode="decimal" step="any" min="0" value="${esc(it.qty)}" ${it._del?'disabled':''} onchange="tmp.edit.items[${i}].qty=+this.value" aria-label="Quantity of ${esc(it.name)}" style="width:110px"></td>
+   <td><select ${it._del||fin?'disabled':''} onchange="tmp.edit.items[${i}].unit=this.value" aria-label="Unit of ${esc(it.name)}">${unitOpts(it.unit)}</select></td>
+   <td style="text-align:right">${fin?'':`<button class="btn sm ${it._del?'':'danger'}" onclick="A.edDel(${i})">${it._del?'Undo':'Remove'}</button>`}</td></tr>`).join('')}
+  </tbody></table></div>
+  ${fin?'':`<div class="sec" style="gap:8px"><span class="small muted">Add an item</span>
+   <div class="grid"><label class="span2">Item<input id="ed_n" list="edlist" placeholder="Choose from the list or type a new item" onchange="A.edFill(this.value)"></label>
+   <label>Quantity<input id="ed_q" type="number" inputmode="decimal" step="any"></label><label>Unit<select id="ed_u"><option value="">Choose</option>${unitOpts('')}</select></label>
+   <label>Category<select id="ed_c"><option value="">Choose</option>${catsFor(sc).map(c=>`<option>${esc(c)}</option>`).join('')}</select></label></div>
+   <datalist id="edlist">${masterFor(sc).map(x=>`<option value="${esc(x.name)}">`).join('')}</datalist>
+   <div class="actions"><button class="btn sm" onclick="A.edAdd()">+ Add to requisition</button></div></div>`}
+  <p class="err" id="ed_err"></p>
+  <div class="actions"><button class="btn primary" onclick="A.edSave()">Save changes</button><button class="btn" onclick="tmp.edit=null;render()">Cancel</button></div></div>`}
+A.edStart=id=>{tmp.edit={rid:id,items:R(id).items.map(it=>({...it}))};render();document.querySelector('.editbox')?.scrollIntoView({block:'start'})};
+A.edDel=i=>{const it=tmp.edit.items[i];if(it._new)tmp.edit.items.splice(i,1);else it._del=!it._del;render()};
+A.edFill=v=>{const m=masterFor(R(tmp.edit.rid).site).find(x=>x.name.toLowerCase()===v.trim().toLowerCase());const g=m?null:guessCat(v,R(tmp.edit.rid).site);
+  if(m){document.getElementById('ed_u').value=m.unit;document.getElementById('ed_c').value=m.cat}else if(g)document.getElementById('ed_c').value=g.cat};
+A.edAdd=()=>{const n=val('ed_n').trim(),q=+val('ed_q'),u=val('ed_u'),c=val('ed_c'),err=document.getElementById('ed_err');
+  if(!n||!(q>0)||!u||!c){err.textContent='To add an item, give its name, quantity, unit and category.';return}
+  const r=R(tmp.edit.rid),m=masterFor(r.site).find(x=>x.name.toLowerCase()===n.toLowerCase());
+  tmp.edit.items.push({...blankItem(r.site),name:m?.name||n,qty:q,unit:u,cat:c,subUnit:m?.subUnit||'',brand:m?.brand||'',areaType:'entire',_new:true});render()};
+A.edSave=()=>{const r=R(tmp.edit.rid);if(r.stage==='final'){const o=Object.fromEntries(r.items.map(i=>[i.id,i]));if(tmp.edit.items.some(i=>i._new||i._del||i.unit!==o[i.id]?.unit))return toast('At final approval only quantities can change')}const by=uname(S.me),old=Object.fromEntries(r.items.map(i=>[i.id,i])),msgs=[];
+  const keep=tmp.edit.items.filter(i=>!i._del);
+  if(!keep.length){document.getElementById('ed_err').textContent='A requisition needs at least one item. To cancel it completely, use Reject.';return}
+  if(keep.some(i=>!(+i.qty>0))){document.getElementById('ed_err').textContent='Every item needs a quantity above zero.';return}
+  tmp.edit.items.forEach(it=>{const o=old[it.id];
+    if(it._new){msgs.push(`Added ${it.name}, ${nf(it.qty)} ${it.unit}`);it.changes=[`Added by ${by}`]}
+    else if(it._del){msgs.push(`Removed ${o.name} (${nf(o.qty)} ${o.unit})`)}
+    else if(+it.qty!==+o.qty||it.unit!==o.unit){const t2=`${o.name}: ${nf(o.qty)} ${o.unit} → ${nf(it.qty)} ${it.unit}`;msgs.push('Changed '+t2);it.changes=[...(o.changes||[]),`${by} changed ${nf(o.qty)} ${o.unit} → ${nf(it.qty)} ${it.unit}`]}});
+  if(!msgs.length){tmp.edit=null;render();return}
+  r.removed=[...(r.removed||[]),...tmp.edit.items.filter(i=>i._del).map(i=>({name:i.name,qty:i.qty,unit:i.unit,by:S.me,at:now()}))];
+  r.items=keep.map(({_new,_del,...it})=>({...it,qty:+it.qty}));
+  Object.keys(r.quotes).forEach(c=>{if(!r.items.some(i=>i.cat===c)){delete r.quotes[c]}});
+  msgs.forEach(m=>log(m+behalfTxt(r),r.no));
+  r.remarks.push({at:now(),by:S.me,kind:'Items changed',text:msgs.join('; ')});
+  send(targets('store',r.site),`${by} changed ${r.no}: ${msgs.join('; ')}`,'Items changed');
+  tmp.edit=null;render();toast(msgs.length+' change'+(msgs.length>1?'s':'')+' saved')};
+
+A.dName=(i,v)=>{const it=draft.items[i];it.fromList=false;if(hasHi(v)){it.orig=v;it.name=toEn(v)}else{it.orig='';it.name=v}const e=document.getElementById('tr_'+i);if(e)e.textContent=it.orig?'English: '+it.name:''};
+function masterFor(sc){const ty=site(sc).type;return S.items.filter(x=>x.type===ty)}
+function addToMaster(it,sc){const ty=site(sc).type,n=it.name.trim();if(!n)return false;const ex=S.items.find(x=>x.type===ty&&x.name.toLowerCase()===n.toLowerCase());if(ex)return false;S.items.push({name:n,orig:it.orig||'',unit:it.unit,subUnit:it.subUnit||'',cat:it.cat,brand:it.brand||'',type:ty,added:now()});return true}
+function buildMaster(){S.items=[];S.reqs.forEach(r=>r.items.forEach(it=>addToMaster(it,r.site)));S.stock.forEach(st=>addToMaster({name:st.name,unit:st.unit,cat:st.cat},st.site));
+  [['JAI','PPC cement','bags','bag of 50 kg','Civil and structural'],['JAI','River sand','cft','','Civil and structural'],['JAI','Stone chips 20 mm','cft','','Civil and structural'],['JAI','TMT bar 8 mm','MT','','Steel and reinforcement'],['JAI','TMT bar 16 mm','MT','','Steel and reinforcement'],['JAI','Wall putty','bags','bag of 40 kg','Paint and finishing'],['JAI','Safety helmet','nos','','Safety gear'],['JAI','UPVC pipe 4 inch','metres','length of 3 m','Plumbing and sanitary'],['KAL','Shrink film roll','rolls','','Packaging'],['KAL','Label 500 ml','nos','','Packaging'],['KAL','Sugar','kg','bag of 50 kg','Raw materials'],['KAL','Food grade lubricant','litres','','Lubricants and fuel']]
+  .forEach(([sc,name,unit,subUnit,cat])=>addToMaster({name,unit,subUnit,cat,brand:''},sc))}
+function comboMatches(i){const q=(document.getElementById('nm_'+i)?.value||'').trim().toLowerCase();const all=masterFor(me().site);
+  const m=q?all.filter(x=>x.name.toLowerCase().includes(q)||(x.orig||'').includes(q)||(x.brand||'').toLowerCase().includes(q)):all;
+  return {q,list:m.sort((a,b)=>(a.name.toLowerCase().startsWith(q)?0:1)-(b.name.toLowerCase().startsWith(q)?0:1)||a.name.localeCompare(b.name)).slice(0,30),exact:all.some(x=>x.name.toLowerCase()===q||(x.orig&&x.orig===q))}}
+A.combo=i=>{const box=document.getElementById('cl_'+i),inp=document.getElementById('nm_'+i);if(!box)return;const {q,list,exact}=comboMatches(i);tmp.ci=tmp.ci||{};tmp.ci[i]=-1;tmp.cl=list;
+  box.innerHTML=list.map((x,k)=>`<button type="button" class="opt" role="option" id="op_${i}_${k}" onmousedown="event.preventDefault()" onclick="A.pickItem(${i},${k})"><span>${esc(x.name)}${x.orig?` <span class="muted">${esc(x.orig)}</span>`:''}</span><small>${esc(x.unit)}${x.subUnit?' · '+esc(x.subUnit):''} · ${esc(x.cat)}${x.brand?' · '+esc(x.brand):''}</small></button>`).join('')
+   +(q&&!exact?`<button type="button" class="opt new" onmousedown="event.preventDefault()" onclick="A.newItem(${i})"><span>+ Add "${esc(inp.value.trim())}" as a new item</span><small>It joins the list once this requisition is sent</small></button>`:'')
+   +(!list.length&&!q?'<p class="small muted" style="padding:8px 12px;margin:0">No items yet. Type the name of a new item.</p>':'');
+  box.hidden=!box.innerHTML;inp.setAttribute('aria-expanded',String(!box.hidden))};
+A.comboHide=i=>setTimeout(()=>{const b=document.getElementById('cl_'+i);if(b)b.hidden=true;document.getElementById('nm_'+i)?.setAttribute('aria-expanded','false')},120);
+A.comboKey=(i,e)=>{const box=document.getElementById('cl_'+i);if(!box||box.hidden)return;const opts=[...box.querySelectorAll('.opt')];if(!opts.length)return;let k=tmp.ci?.[i]??-1;
+  if(e.key==='ArrowDown'||e.key==='ArrowUp'){e.preventDefault();k=e.key==='ArrowDown'?Math.min(k+1,opts.length-1):Math.max(k-1,0);tmp.ci[i]=k;opts.forEach((o,j)=>o.classList.toggle('hl',j===k));opts[k].scrollIntoView({block:'nearest'})}
+  else if(e.key==='Enter'&&k>=0){e.preventDefault();opts[k].click()}
+  else if(e.key==='Escape'){box.hidden=true}};
+A.pickItem=(i,k)=>{const x=tmp.cl[k];if(!x)return;const it=draft.items[i];Object.assign(it,{name:x.name,orig:x.orig||'',unit:x.unit||it.unit,subUnit:x.subUnit||'',cat:x.cat||it.cat,brand:x.brand||'',fromList:true});render();const q=document.querySelector(`#ic_${i} input[type=number]`);if(q)q.focus()};
+A.newItem=i=>{const it=draft.items[i];it.fromList=false;document.getElementById('cl_'+i).hidden=true;A.dNameDone(i);const e=document.getElementById('tr_'+i);if(e&&!it.orig)e.textContent='New item. Fill in the unit and category once, and next time it comes up in the list.'};
+A.dNameDone=i=>{const it=draft.items[i],g=guessCat(it.name,me().site);if(g&&!it.cat){it.cat=g.cat;const s=document.getElementById('cat_'+i);if(s)s.value=g.cat;const h=document.getElementById('cs_'+i);if(h)h.textContent=g.from==='history'?'Filled in from past requisitions':'Suggested, change if wrong'}};
+A.dUnit=(i,v)=>{if(v==='__new'){const n=document.getElementById('nu_'+i);n.hidden=false;n.focus();return}draft.items[i].unit=v};
+A.dNewUnit=(i,v)=>{v=v.trim();if(!v)return;if(!S.units.includes(v)&&!S.unitsPending.includes(v))S.unitsPending.push(v);draft.items[i].unit=v;render();toast(`Unit "${v}" added. It becomes permanent once its PO is approved.`)};
+A.dArea=(i,v)=>{draft.items[i].areaType=v;render()};
+A.dPick=(i,k)=>{const a=S.areas[me().site][k];draft.items[i].areaName=a;const e=document.getElementById('an_'+i);if(e)e.value=a};
+A.dAdd=()=>{draft.items.push(blankItem(me().site));render()};
+A.dRemove=i=>{draft.items.splice(i,1);render()};
+function readPhoto(input,cb){const f=input.files?.[0];if(!f)return;const rd=new FileReader();rd.onload=()=>{const img=new Image();img.onload=()=>{const sc=Math.min(1,640/Math.max(img.width,img.height));const c=document.createElement('canvas');c.width=img.width*sc;c.height=img.height*sc;c.getContext('2d').drawImage(img,0,0,c.width,c.height);cb(c.toDataURL('image/jpeg',.75))};img.onerror=()=>toast('That file is not a picture we can read.');img.src=rd.result};rd.readAsDataURL(f)}
+A.dPhoto=(i,input)=>readPhoto(input,u=>{draft.items[i].photo=u;render()});
+A.submit=()=>{
+  const u=me(),sc=u.site,mfg=site(sc).type==='mfg',err=[];
+  if(!draft.deadline)err.push('Choose the date you need the material by.');
+  draft.items.forEach((it,i)=>{const n=`Item ${i+1}`;if(!it.name.trim())err.push(`${n}: add the item name.`);if(!(+it.qty>0))err.push(`${n}: add a quantity.`);if(!it.unit)err.push(`${n}: choose a unit.`);if(!it.cat)err.push(`${n}: choose a category.`);if(mfg&&!it.areaType)err.push(`${n}: choose the area of usage.`);if(it.areaType==='specific'&&!it.areaName.trim())err.push(`${n}: add the area name.`)});
+  if(err.length){document.getElementById('ferr').innerHTML=err.map(esc).join('<br>');toast('Some details are missing');return}
+  const f=flowFor(sc);
+  const r={id:uid(),no:nextNo('req',sc),site:sc,createdBy:u.id,createdAt:now(),deadline:new Date(draft.deadline+'T18:00').getTime(),stage:f[0],stageSince:now(),
+    items:draft.items.map(it=>({...it,qty:+it.qty,name:it.name.trim()})),remarks:[],quotes:{},award:{},company:'',reminded:{},returnTo:null};
+  r.items.forEach(it=>{if(it.areaType==='specific'){const m=S.areaCounts[sc]=S.areaCounts[sc]||{};m[it.areaName.trim()]=(m[it.areaName.trim()]||0)+1}});
+  let added=0;r.items.forEach(it=>{if(addToMaster(it,sc))added++});S.reqs.push(r);log('Raised requisition'+(added?` (${added} new item${added>1?'s':''} added to the item list)`:''),r.no);notifyStage(r);draft=null;tmp.slipMsg=null;view={v:'req',id:r.id};render();window.scrollTo(0,0);toast(`Sent. Number ${r.no}`);
+};
+function notifyStage(r){send(targets(ownerOf(r),r.site),`${r.no} from ${site(r.site).name} is waiting for you (${STAGE[r.stage].label}). Needed by ${fmtD(r.deadline)}.`,'New task')}
+function advance(r){const f=flowFor(r.site),i=f.indexOf(r.stage);r.stage=f[i+1];r.stageSince=now();if(r.stage==='quotes'&&refreshContractQuotes(r))log('Rate contract prices added automatically',r.no);notifyStage(r)}
+function behalfTxt(r){const o=ownerOf(r);return o!=='pm'&&o!=='store'&&o!==S.me?` on behalf of ${uname(o)}`:''}
+A.approve=id=>{if(tmp.edit?.rid===id)return toast('Save or cancel your item changes first');const r=R(id);log(`Approved (${STAGE[r.stage].label})${behalfTxt(r)}`,r.no);advance(r);render();toast('Approved and passed on')};
+A.toFinal=id=>{const r=R(id),miss=catsOf(r).filter(c=>!(r.quotes[c]||[]).length);if(miss.length)return toast('Add at least one quote for: '+miss.join(', '));log('Sent quote comparison to Raunak',r.no);advance(r);render();toast('Comparison sent to Raunak')};
+A.award=(rid,iid,qid)=>{const r=R(rid);r.award=r.award||{};r.award[iid]=qid;save();render()};
+function fillAward(r){r.award=r.award||{};const miss=[];r.items.forEach(it=>{const q=awardOf(r,it);if(q)r.award[it.id]=q.id;else miss.push(it.name)});return miss}
+A.confirmVendors=id=>{if(tmp.edit?.rid===id)return toast('Save or cancel your item changes first');const r=R(id),miss=fillAward(r);if(miss.length)return toast('No quote yet for: '+miss.join(', ')+'. Ask for more quotes first.');
+  r.awardBy=S.me;r.pmDecides=false;const {by}=awardSummary(r);
+  log(`Confirmed vendors${behalfTxt(r)}: `+r.items.map(it=>`${it.name} → ${V(awardOf(r,it).vendorId).name}`).join('; '),r.no);
+  advance(r);render();toast('Vendors confirmed. The procurement manager will issue the POs.')};
+A.pmDecide=id=>{if(tmp.edit?.rid===id)return toast('Save or cancel your item changes first');const r=R(id);r.pmDecides=true;log(`Asked the procurement manager to choose the vendors${behalfTxt(r)}`,r.no);advance(r);render();toast('Handed to the procurement manager')};
+A.issuePOs=id=>{const r=R(id),s=site(r.site),company=r.company||s.companies[0],miss=fillAward(r);if(miss.length)return toast('No quote yet for: '+miss.join(', '));
+  const groups={};r.items.forEach(it=>{const q=awardOf(r,it);(groups[q.vendorId]=groups[q.vendorId]||[]).push({it,q})});
+  const made=Object.entries(groups).map(([vid,en])=>makePO(r,vid,en,company));
+  r.items.forEach(it=>{const pi=S.unitsPending.indexOf(it.unit);if(pi>-1){S.unitsPending.splice(pi,1);S.units.push(it.unit)}S.catHistory[s.type+'|'+it.name.toLowerCase()]=it.cat});
+  if(r.pmDecides)log('Chose vendors: '+r.items.map(it=>`${it.name} → ${V(awardOf(r,it).vendorId).name}`).join('; '),r.no);
+  log(`Issued ${made.length>1?made.length+' purchase orders':'purchase order'}: ${made.map(p=>p.no).join(', ')}`,r.no);
+  r.stage='approved';r.stageSince=now();
+  send([...targets('store',r.site),...targets('raunak')],`${r.no}: PO ${made.map(p=>p.no+' ('+V(p.vendorId).name+')').join(', ')} issued.`,'PO issued');
+  made.forEach(p=>send([],`Purchase order ${p.no} from Kailasha Group. PDF attached.`,'PO to vendor',now(),`${V(p.vendorId).name} (${V(p.vendorId).phone})`));
+  render();toast(made.length>1?`${made.length} purchase orders issued`:'Purchase order issued')};
+/* ---------- rate contracts (brand price list + agreed discount) ---------- */
+function discFactor(d){return String(d||'0').split('+').map(x=>parseFloat(x)||0).reduce((f,p)=>f*(1-p/100),1)}
+function rowDisc(list,row){const g=(list.disc||[]).find(x=>x.group&&normTxt(x.group)===normTxt(row.g));return g?g.d:(list.defDisc||'0')}
+const rowNet=(list,row)=>row.price*discFactor(rowDisc(list,row));
+const listsFor=sc=>S.rateLists.filter(l=>l.type===site(sc).type&&l.rows.length);
+function contractOffers(r,it){const out=[];listsFor(r.site).forEach(l=>{const m=S.contractMap[l.id+'|'+normTxt(it.name)];if(m&&l.rows[m.row]){const row=l.rows[m.row];out.push({l,row,m,net:rowNet(l,row)*(m.factor||1)})}});return out.sort((a,b)=>a.net-b.net)}
+function refreshContractQuotes(r){let added=0;
+  Object.keys(r.quotes).forEach(c=>r.quotes[c]=r.quotes[c].filter(q=>!q.contract));
+  listsFor(r.site).forEach(l=>{if(!l.vendorId||!V(l.vendorId))return;
+    catsOf(r).forEach(cat=>{const rates={};r.items.filter(i=>i.cat===cat).forEach(it=>{const o=contractOffers(r,it).find(x=>x.l.id===l.id);if(o)rates[it.id]=Math.round(o.net*100)/100});
+      if(Object.keys(rates).length){(r.quotes[cat]=r.quotes[cat]||[]).push({id:'c_'+l.id+'_'+uid(),vendorId:l.vendorId,brand:l.brand+' (rate contract)',gst:+l.gst||18,rates,at:now(),contract:l.id});added++}})});
+  Object.keys(r.quotes).forEach(c=>{if(!r.quotes[c].length)delete r.quotes[c]});
+  return added}
+function contractBox(r){if(me()?.role==='store'||!listsFor(r.site).length)return '';
+  const rows=r.items.map(it=>({it,o:contractOffers(r,it)})).filter(x=>x.o.length);const pmQ=r.stage==='quotes'&&me().role==='pm';
+  return `<div class="box"><div class="boxh"><h3>Rate contracts</h3>${pmQ?`<button class="btn sm" onclick="A.ctCheck('${r.id}',this)">Check rate contracts</button>`:''}</div>
+  ${rows.length?`<div class="tw"><table><thead><tr><th>Item</th><th>Under contract</th><th>Cheaper</th></tr></thead><tbody>${rows.map(({it,o})=>`<tr><td>${esc(it.name)}<small>${nf(it.qty)} ${esc(it.unit)}</small></td>
+    <td>${o.map(x=>`<div class="ctrow"><b>${esc(x.l.brand)}</b> ${rsd(x.net)} per ${esc(it.unit.replace(/s$/,''))} <small>${esc(x.row.name)} · list ${rsd(x.row.price)} less ${esc(rowDisc(x.l,x.row))}%${x.m.factor&&x.m.factor!==1?` · ×${x.m.factor}`:''}${x.m.sure?'':' · <span class="amb">check this match</span>'}</small>${pmQ?` <button class="linkbtn small" onclick="A.ctUnmatch('${r.id}','${x.l.id}','${it.id}')">Not this</button>`:''}</div>`).join('')}</td>
+    <td>${o.length>1?`<b>${esc(o[0].l.brand)}</b><small>${(((o[1].net-o[0].net)/o[1].net)*100).toFixed(1)}% cheaper than ${esc(o[1].l.brand)}</small>`:`<b>${esc(o[0].l.brand)}</b><small>only contract</small>`}</td></tr>`).join('')}</tbody></table></div>
+    <p class="small muted">Contract prices are added to the comparison automatically, so these items need no fresh quotation.</p>`
+  :`<p class="small muted">${pmQ?'Tap "Check rate contracts" to match these items with the brand price lists.':'No item in this requisition is covered by a rate contract yet.'}</p>`}</div>`}
+A.ctUnmatch=(rid,lid,iid)=>{const r=R(rid),it=r.items.find(i=>i.id===iid);delete S.contractMap[lid+'|'+normTxt(it.name)];refreshContractQuotes(r);log(`Removed rate contract match for ${it.name}`,r.no);render()};
+A.ctCheck=async(rid,btn)=>{const r=R(rid),lists=listsFor(r.site);if(!lists.length)return toast('No rate contracts yet. Add one under Rate contracts.');
+  const todo=r.items.filter(it=>lists.some(l=>!S.contractMap[l.id+'|'+normTxt(it.name)]));
+  if(todo.length&&SAMPLE){btn.disabled=true;btn.textContent='Matching…';
+    try{const words=t2=>normTxt(t2).split(' ').filter(w=>w.length>1);
+      const cand=lists.map(l=>({list_id:l.id,brand:l.brand,rows:l.rows.map((row,i)=>({i,group:row.g,name:row.name,unit:row.unit})).filter(row=>todo.some(it=>words(it.name+' '+it.spec).some(w=>normTxt(row.name+' '+row.group).includes(w)))).slice(0,150)}));
+      const res=await SAMPLE.json(`Match a construction/factory material requisition to brand price lists. For each requisition item and each price list, pick the ONE row that is the same product (same material, type, size and pressure class), or none. Sizes may be written in inches or mm (1/2"=15 mm, 3/4"=20 mm, 1"=25 mm, 1 1/4"=32 mm, 1 1/2"=40 mm, 2"=50 mm).
+Requisition items: ${JSON.stringify(todo.map(it=>({id:it.id,name:it.name,qty:it.qty,unit:it.unit,sub_unit:it.subUnit||undefined,spec:it.spec||undefined})))}
+Price lists: ${JSON.stringify(cand)}
+factor = how many price-list units make ONE of our units (e.g. our unit "metres", list unit "length of 3 m" -> 0.3333; same unit -> 1).
+sure = true only if size and type clearly match.
+Reply with JSON only: {"matches":[{"item_id":"","list_id":"","row":0,"factor":1,"sure":true}]}`);
+      (res?.matches||[]).forEach(m=>{const l=lists.find(x=>x.id===m.list_id),it=todo.find(x=>x.id===m.item_id);if(l&&it&&l.rows[+m.row])S.contractMap[l.id+'|'+normTxt(it.name)]={row:+m.row,factor:+m.factor>0?+m.factor:1,sure:m.sure===true}})}
+    catch(e){toast(qErrCopy(e))}}
+  else if(todo.length&&!SAMPLE)toast('Automatic matching is not available in this view');
+  const n=refreshContractQuotes(r);log('Checked rate contracts'+(n?`: added ${n} contract price list${n>1?'s':''} to the comparison`:''),r.no);render();toast(n?'Contract prices added to the comparison':'No contract matches found')};
+
+function contractsView(){
+  return `<div class="head"><div><h1>Rate contracts</h1><p class="muted">Brand price lists with your agreed discounts. Matching items get prices without asking for a quotation.</p></div><button class="btn primary" onclick="A.ctNew()">+ Add price list</button></div>
+  <div class="list">${S.rateLists.map(l=>`<button class="row" onclick="A.go('contract','${l.id}')"><div class="main"><div><b>${esc(l.brand)}</b> <span class="muted">· ${esc(l.title)}</span></div><div class="small muted">${l.rows.length} items · ${l.type==='mfg'?'Kaveri Agro':'Real estate'} · via ${esc(V(l.vendorId)?.name||'no vendor set')} · discount ${(l.disc||[]).map(d=>`${esc(d.group)} ${esc(d.d)}%`).join(', ')||esc(l.defDisc)+'%'}</div></div><div class="side">${l.sample?'<span class="chip">Sample</span>':''}${l.validTill?`<span class="chip ${new Date(l.validTill)<new Date()?'bad':'ok'}">Valid till ${fmtD(new Date(l.validTill))}</span>`:''}</div></button>`).join('')||'<p class="empty">No price lists yet.</p>'}</div>`}
+function contractView(l){if(!l)return '<p>Not found.</p>';const q=(tmp.ctq||'').toLowerCase();
+  const groups=[...new Set(l.rows.map(x=>x.g).filter(Boolean))];
+  return `<div class="head"><div><button class="linkbtn small" onclick="A.go('contracts')">← Rate contracts</button><h1 style="margin-top:4px">${esc(l.brand)}</h1><p class="muted">${esc(l.title)}${l.sample?' · sample prices, not real':''}</p></div><button class="btn danger sm" onclick="A.ctDelAsk('${l.id}')">Delete list</button></div>
+  <section class="box"><h2>Discount structure</h2>
+    <div class="grid"><label>Brand<input value="${esc(l.brand)}" onchange="A.ctSet('${l.id}','brand',this.value)"></label>
+    <label>Supplied by (vendor)<select onchange="A.ctSet('${l.id}','vendorId',this.value)"><option value="">Choose</option>${S.vendors.map(v=>`<option value="${v.id}" ${v.id===l.vendorId?'selected':''}>${esc(v.name)}</option>`).join('')}</select></label>
+    <label>Used for<select onchange="A.ctSet('${l.id}','type',this.value)"><option value="re" ${l.type==='re'?'selected':''}>Real estate projects</option><option value="mfg" ${l.type==='mfg'?'selected':''}>Kaveri Agro</option></select></label>
+    <label>GST %<select onchange="A.ctSet('${l.id}','gst',+this.value)">${[0,5,12,18,28].map(g=>`<option ${g===+l.gst?'selected':''}>${g}</option>`).join('')}</select></label>
+    <label>Valid till<input type="date" value="${esc(l.validTill||'')}" onchange="A.ctSet('${l.id}','validTill',this.value)"></label></div>
+    <div class="tw"><table><thead><tr><th>Item group</th><th>Discount %</th></tr></thead><tbody>
+    ${groups.map(g=>{const d=(l.disc||[]).find(x=>normTxt(x.group)===normTxt(g));return `<tr><td>${esc(g)}</td><td><input value="${esc(d?.d??'')}" placeholder="${esc(l.defDisc||'0')} (default)" data-l="${l.id}" data-g="${esc(g)}" onchange="A.ctDisc(this)" style="max-width:140px"></td></tr>`}).join('')}
+    <tr><td><b>Everything else (default)</b></td><td><input value="${esc(l.defDisc||'')}" onchange="A.ctSet('${l.id}','defDisc',this.value.trim())" style="max-width:140px"></td></tr></tbody></table></div>
+    <p class="hint">Write a discount like 40, or 40+2 for 40% then a further 2%.</p></section>
+  <section class="sec"><div class="head"><h2>Price list</h2><span class="small muted">${l.rows.length} items · net = list price less discount</span></div>
+    <input placeholder="Search items" value="${esc(tmp.ctq||'')}" oninput="tmp.ctq=this.value;document.getElementById('ctrows').innerHTML=ctRows(R_L('${l.id}'))" aria-label="Search price list">
+    <div class="tw"><table><thead><tr><th>Group</th><th>Item</th><th>Unit</th><th class="num">List price</th><th class="num">Discount</th><th class="num">Net price</th></tr></thead><tbody id="ctrows">${ctRows(l)}</tbody></table></div></section>`}
+const R_L=id=>S.rateLists.find(l=>l.id===id);
+function ctRows(l){const q=(tmp.ctq||'').toLowerCase();return l.rows.filter(x=>!q||(x.g+' '+x.name).toLowerCase().includes(q)).slice(0,300).map(x=>`<tr><td>${esc(x.g)}</td><td>${esc(x.name)}</td><td>${esc(x.unit)}</td><td class="num">${rsd(x.price)}</td><td class="num">${esc(rowDisc(l,x))}%</td><td class="num"><b>${rsd(rowNet(l,x))}</b></td></tr>`).join('')||'<tr><td colspan="6" class="muted">No items match.</td></tr>'}
+A.ctSet=(id,f,v)=>{const l=R_L(id);l[f]=v;log(`Rate contract ${l.brand}: set ${f==='vendorId'?'vendor':f} to ${f==='vendorId'?V(v)?.name:v}`);render();toast('Saved')};
+A.ctDisc=el=>{const l=R_L(el.dataset.l),g=el.dataset.g,v=el.value.trim();l.disc=(l.disc||[]).filter(x=>normTxt(x.group)!==normTxt(g));if(v)l.disc.push({group:g,d:v});log(`Rate contract ${l.brand}: ${g} discount ${v||'cleared'}`);render();toast('Discount saved')};
+A.ctDelAsk=id=>modal(`<h2>Delete this price list?</h2><p>Items matched to it will need quotations again.</p><div class="mact"><button class="btn" onclick="A.close()">Cancel</button><button class="btn danger" onclick="A.ctDel('${id}')">Delete</button></div>`);
+A.ctDel=id=>{const l=R_L(id);S.rateLists=S.rateLists.filter(x=>x.id!==id);Object.keys(S.contractMap).forEach(k=>{if(k.startsWith(id+'|'))delete S.contractMap[k]});log('Deleted rate contract '+l.brand);A.go('contracts')};
+A.ctNew=()=>modal(`<h2>Add a brand price list</h2>
+  <div class="grid"><label>Brand<input id="ct_b" placeholder="e.g. Astral"></label><label>Supplied by (vendor)<select id="ct_v"><option value="">Choose later</option>${S.vendors.map(v=>`<option value="${v.id}">${esc(v.name)}</option>`).join('')}</select></label>
+  <label>Used for<select id="ct_t"><option value="re">Real estate projects</option><option value="mfg">Kaveri Agro</option></select></label><label>Default discount %<input id="ct_d" placeholder="e.g. 40 or 40+2"></label></div>
+  <label class="drop" for="ct_f"><b>Upload the price list</b><span class="small muted">PDF, Excel or photos. Each item and its list price is read automatically. Long lists take a few minutes.</span><input id="ct_f" type="file" accept="application/pdf,image/*,.xlsx,.csv" multiple></label>
+  <div id="ct_st" hidden></div>
+  <div class="mact"><button class="btn" onclick="A.close()">Cancel</button><button class="btn primary" id="ct_go" onclick="A.ctRead()">Read price list</button></div>`);
+async function sheetText(file){const X=await excelLib();const wb=new X.Workbook();await wb.xlsx.load(await file.arrayBuffer());const out=[];wb.eachSheet(ws=>{ws.eachRow(row=>{const v=row.values.slice(1).map(c=>c&&typeof c==='object'?(c.result??c.text??c.richText?.map(t2=>t2.text).join('')??''):c??'').map(String);if(v.some(x=>x.trim()))out.push(`[${ws.name}] `+v.join(' | '))})});return out}
+A.ctRead=async()=>{const brand=val('ct_b').trim(),files=[...(document.getElementById('ct_f').files||[])],st=document.getElementById('ct_st');
+  if(!brand)return toast('Add the brand name');if(!files.length)return toast('Choose the price list file');
+  if(!SAMPLE){st.hidden=false;st.className='note';st.textContent='Reading price lists is not available in this view.';return}
+  const go=document.getElementById('ct_go');go.disabled=true;st.hidden=false;st.className='note info';
+  const chunks=[];
+  try{for(const f of files){
+      if(/\.(xlsx|csv)$/i.test(f.name)){const lines=/\.csv$/i.test(f.name)?(await f.text()).split(/\r?\n/).filter(x=>x.trim()):await sheetText(f);for(let i=0;i<lines.length;i+=120)chunks.push({text:lines.slice(i,i+120).join('\n')})}
+      else if(f.type==='application/pdf'||/\.pdf$/i.test(f.name)){const lib=await pdfLib();const doc=await lib.getDocument({data:new Uint8Array(await f.arrayBuffer())}).promise;
+        for(let i=1;i<=Math.min(doc.numPages,40);i++){const pg=await doc.getPage(i);const tc=await pg.getTextContent();const t2=tc.items.map(x=>x.str+(x.hasEOL?'\n':' ')).join('');let img=null;
+          if(SAMPLE_IMG){const vp=pg.getViewport({scale:1.6});const c=document.createElement('canvas');c.width=vp.width;c.height=vp.height;const g=c.getContext('2d');g.fillStyle='#fff';g.fillRect(0,0,c.width,c.height);await pg.render({canvasContext:g,viewport:vp}).promise;img=await new Promise(res=>c.toBlob(res,'image/jpeg',.85))}
+          chunks.push({text:t2,img})}}
+      else if(f.type.startsWith('image/')&&SAMPLE_IMG)chunks.push({text:'',img:(await shrinkImg(f,1800,.85)).blob})}
+    const rows=[];
+    for(let i=0;i<chunks.length;i++){st.textContent=`Reading part ${i+1} of ${chunks.length}… ${rows.length} items so far`;
+      const c=chunks[i];const res=await SAMPLE.json(`This is part ${i+1} of a ${brand} price list (Indian building materials or factory supplies). Extract every priced item.
+For each item give: group (the section or product group heading, e.g. "Pipes", "Fittings - Elbow", "Valves"), name (full description including size, e.g. "CPVC SDR 11 pipe 25 mm (1 inch)"), unit (what the price is for, e.g. "metre", "length of 3 m", "nos", "box of 10"), price (list price / MRP as a number, before discount; if the list gives price per length and per metre, use per metre).
+Skip headings, notes and blank lines. Reply with JSON only: {"rows":[{"group":"","name":"","unit":"","price":0}]}
+${c.text?'Text of this part:\n'+c.text.slice(0,50000):'(read the image)'}`,c.img?{images:[c.img]}:{});
+      (res?.rows||[]).forEach(x=>{if(x&&x.name&&+x.price>0)rows.push({g:String(x.group||'').slice(0,80),name:String(x.name).slice(0,200),unit:String(x.unit||'nos').slice(0,40),price:+x.price})})}
+    if(!rows.length){st.className='note';st.textContent='No priced items could be read from this file.';go.disabled=false;return}
+    const l={id:uid(),brand,title:files.map(f=>f.name).join(', '),vendorId:val('ct_v'),type:val('ct_t'),gst:18,defDisc:val('ct_d').trim()||'0',disc:[],rows,uploaded:now(),validTill:''};
+    S.rateLists.push(l);log(`Added ${brand} price list (${rows.length} items)`);A.close();A.go('contract',l.id);toast(`${rows.length} items read. Now set the discounts.`)}
+  catch(e){st.className='note';st.textContent=qErrCopy(e);go.disabled=false}};
+
+/* small orders: up to Rs 10,000 incl. GST, every rate same or lower than last order -> PM orders directly */
+const SMALL_LIMIT=10000;
+function smallCheck(r){const why=[];let total=0;
+  r.items.forEach(it=>{const q=lowestQ(r,it);if(!q){why.push(`${it.name} has no quote yet`);return}
+    const x=+q.rates[it.id];total+=x*it.qty*(1+(+q.gst||0)/100);const l=lastRate(it.name,r.site,r.id);
+    if(!l)why.push(`${it.name} has never been ordered before`);else if(x>l.rate+1e-9)why.push(`${it.name} is dearer than last time (${rsd(x)} vs ${rsd(l.rate)})`)});
+  if(total>SMALL_LIMIT)why.unshift(`order value is ${rs(total)}, above ${rs(SMALL_LIMIT)}`);
+  return {ok:!why.length,total,why}}
+A.smallOrder=id=>{const r=R(id),c=smallCheck(r);if(!c.ok)return toast('Not allowed: '+c.why[0]);
+  r.award={};r.items.forEach(it=>r.award[it.id]=lowestQ(r,it).id);r.smallOrder=true;r.awardBy='pm';
+  log(`Cleared under the ${rs(SMALL_LIMIT)} rule: value ${rs(c.total)}, every rate same or lower than the last order. Raunak's confirmation not needed.`,r.no);
+  r.stage='issue';A.issuePOs(id);
+  send(targets('raunak'),`For your information: ${r.no} (${site(r.site).name}) ordered directly by the procurement manager under the ${rs(SMALL_LIMIT)} rule. Value ${rs(c.total)}, all rates same or lower than last time.`,'Small order')};
+
+A.moreQuotes=id=>modal(`<h2>Ask for more quotes</h2><label>Note for the procurement manager<textarea id="mq" placeholder="e.g. Get one more quote with Polycab"></textarea></label><div class="mact"><button class="btn" onclick="A.close()">Cancel</button><button class="btn primary" onclick="A.doMore('${id}')">Send back to procurement</button></div>`);
+A.doMore=id=>{const r=R(id),n=val('mq').trim();if(!n)return toast('Add a short note');r.remarks.push({at:now(),by:S.me,kind:'More quotes',text:n});log('Asked for more quotes',r.no);r.stage='quotes';r.stageSince=now();notifyStage(r);A.close();render()};
+A.sendBack=id=>modal(`<h2>Send back for clarification</h2><p class="small muted">The storekeeper sees your note, adds what is missing, and sends it back to you.</p><label>What is missing?<textarea id="sb" placeholder="e.g. Please add a photo and the size of the pipe"></textarea></label><div class="mact"><button class="btn" onclick="A.close()">Cancel</button><button class="btn primary" onclick="A.doSendBack('${id}')">Send back</button></div>`);
+A.doSendBack=id=>{const r=R(id),n=val('sb').trim();if(!n)return toast('Write what is missing');r.returnTo=r.stage;r.stage='clarify';r.stageSince=now();r.remarks.push({at:now(),by:S.me,kind:'Sent back',text:n});log('Sent back for clarification',r.no);send(targets('store',r.site),`${uname(S.me)} sent back ${r.no}: ${n}`,'Clarification');A.close();render();toast('Sent back to the storekeeper')};
+A.editItem=(rid,iid,v)=>{const it=R(rid).items.find(i=>i.id===iid);it.spec=v;save()};
+A.editPhoto=(rid,iid,input)=>readPhoto(input,u=>{R(rid).items.find(i=>i.id===iid).photo=u;render();toast('Photo added')});
+A.resubmit=id=>{const r=R(id),n=val('reply').trim();r.remarks.push({at:now(),by:S.me,kind:'Reply',text:n||'Details added.'});log('Resubmitted after clarification',r.no);r.stage=r.returnTo||flowFor(r.site)[0];r.returnTo=null;r.stageSince=now();notifyStage(r);render();toast('Sent back for approval')};
+A.reject=id=>modal(`<h2>Reject requisition</h2><p class="small muted">This closes the requisition for good. The storekeeper will need to raise a new one.</p><label>Reason<textarea id="rj"></textarea></label><div class="mact"><button class="btn" onclick="A.close()">Cancel</button><button class="btn danger" onclick="A.reject2('${id}')">Continue</button></div>`);
+A.reject2=id=>{const n=val('rj').trim();if(!n)return toast('Give a reason');tmp.rj=n;modal(`<h2>Confirm with your PIN</h2><p class="small muted">Enter your personal 4-digit PIN to reject. (Sample PIN: 1234)</p><label>PIN<input id="pin" type="password" inputmode="numeric" maxlength="4" onkeydown="if(event.key==='Enter')A.doReject('${id}')"></label><p class="err" id="pinerr"></p><div class="mact"><button class="btn" onclick="A.close()">Cancel</button><button class="btn danger" onclick="A.doReject('${id}')">Reject</button></div>`)};
+A.doReject=id=>{const r=R(id);if(val('pin')!==me().pin){document.getElementById('pinerr').textContent='Wrong PIN. Nothing was rejected.';return}r.remarks.push({at:now(),by:S.me,kind:'Rejected',text:tmp.rj});log(`Rejected${behalfTxt(r)}`,r.no);r.stage='rejected';r.stageSince=now();send(targets('store',r.site),`${r.no} was rejected by ${uname(S.me)}: ${tmp.rj}`,'Rejected');A.close();render();toast('Requisition rejected')};
+A.urgent=id=>{const r=R(id),to=targets(ownerOf(r),r.site);send(to,`URGENT: ${r.no} from ${site(r.site).name} needs your action today. Needed by ${fmtD(r.deadline)}.`,'Urgent nudge');log('Sent urgent nudge to '+to.map(uname).join(', '),r.no);render();toast('Urgent nudge queued for '+to.map(uname).join(', '))};
+
+/* quotes */
+A.addQuote=(rid,k)=>{const r=R(rid),cat=catsOf(r)[k],its=r.items.filter(i=>i.cat===cat);tmp.qfiles=[];tmp.newVendor=null;tmp.qbusy=null;tmp.qlines=[];tmp.qmap={};tmp.qconfirmed={};
+  modal(`<h2>Add quote</h2><p class="muted small">${esc(cat)} · ${r.no}</p>
+  <label class="drop" for="q_file"><b>Upload the vendor's quotation</b><span class="small muted">PDF, photo or WhatsApp screenshot. The website reads it and fills in the form for you to check.</span><input id="q_file" type="file" accept="application/pdf,image/*" multiple onchange="A.qFile('${rid}',${k},this)"></label>
+  <div id="q_st" hidden></div>
+  <label>Vendor<select id="q_v">${S.vendors.map(v=>`<option value="${v.id}">${esc(v.name)}</option>`).join('')}</select></label>
+  <div class="grid"><label>Brand offered<input id="q_b" placeholder="e.g. Havells"></label><label>GST %<select id="q_g">${[0,5,12,18,28].map(g=>`<option ${g===18?'selected':''}>${g}</option>`).join('')}</select></label></div>
+  ${its.map(it=>`<label>${esc(it.name)} · ${nf(it.qty)} ${esc(it.unit)}<input id="q_${it.id}" type="number" inputmode="decimal" step="any" placeholder="Rate per ${esc(it.unit)}, before GST"></label><div class="qmatch" id="qm_${it.id}" hidden></div>`).join('')}
+  <p class="err" id="q_err"></p><div class="mact"><button class="btn" onclick="A.close()">Cancel</button><button class="btn primary" onclick="A.saveQuote('${rid}',${k})">Save quote</button></div>`)};
+
+/* reading a vendor quotation (PDF / photo) with Claude */
+function loadScript(src){return new Promise((ok,no)=>{const s=document.createElement('script');s.src=src;s.onload=ok;s.onerror=()=>no({code:'lib'});document.head.appendChild(s)})}
+async function pdfLib(){if(window.pdfjsLib)return window.pdfjsLib;const b='https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/';await loadScript(b+'pdf.worker.min.js');await loadScript(b+'pdf.min.js');window.pdfjsLib.GlobalWorkerOptions.workerSrc=b+'pdf.worker.min.js';return window.pdfjsLib}
+async function readPdf(file,wantImgs){
+  const lib=await pdfLib();const doc=await lib.getDocument({data:new Uint8Array(await file.arrayBuffer())}).promise;let text='';const imgs=[];
+  for(let i=1;i<=Math.min(doc.numPages,6);i++){const pg=await doc.getPage(i);const tc=await pg.getTextContent();const t=tc.items.map(x=>x.str+(x.hasEOL?'\n':' ')).join('');text+=`\n--- page ${i} ---\n${t}`;
+    if(wantImgs&&imgs.length<3){const vp=pg.getViewport({scale:1.6});const c=document.createElement('canvas');c.width=vp.width;c.height=vp.height;const g=c.getContext('2d');g.fillStyle='#fff';g.fillRect(0,0,c.width,c.height);await pg.render({canvasContext:g,viewport:vp}).promise;imgs.push(await new Promise(res=>c.toBlob(res,'image/jpeg',.85)))}}
+  return {text,imgs}}
+const normTxt=t=>String(t||'').toLowerCase().replace(/[^a-z0-9ऀ-ॿ]+/g,' ').trim();
+function quotePrompt(r,cat,its,text){
+  const known=[];for(const [vid,m] of Object.entries(S.aliases||{}))for(const [vt,ours] of Object.entries(m))known.push({vendor:V(vid)?.name,vendor_wrote:vt,our_item:ours});
+  return `You are helping a procurement manager at Kailasha Group (Siliguri, India) enter a vendor's quotation. Read the attached quotation (text extracted from the PDF is below, and page images or photos may be attached). Vendors often name items differently from us (for example "FRLS 2.5 sqmm Cu wire" for our "FR copper wire 2.5 sq mm", or a brand's catalogue name), so match by meaning: size, grade, material and type.
+
+Items we asked for (category: ${cat}):
+${JSON.stringify(its.map(i=>({id:i.id,name:i.name,qty:i.qty,unit:i.unit,sub_unit:i.subUnit||undefined,brand_we_suggested:i.brand||undefined,spec:i.spec||undefined})))}
+
+Vendors already in our directory:
+${JSON.stringify(S.vendors.map(v=>({id:v.id,name:v.name,gstin:v.gstin})))}
+
+Name matches the manager confirmed before (treat these as certain when the same vendor uses the same wording):
+${JSON.stringify(known.slice(-200))}
+
+List EVERY priced line in the quotation in "lines", in the order it appears:
+- vendor_text: the item description exactly as the vendor wrote it.
+- vendor_rate_text: the rate and its unit as the vendor wrote it (e.g. "2,080 per coil").
+- item_id: the id of OUR item this line is for, or null if it matches none of ours.
+- rate: the rate per ONE of OUR unit for that item, BEFORE GST, as a number. Convert units if needed (per coil vs per metre, per bag of 2,000 vs per nos, per tonne vs per kg) and remove GST if the rate includes it. null if item_id is null and no sensible conversion exists.
+- sure: true only if you are confident the line is the same item as ours (same size, grade and type). false if it is a near match, a different size or grade, or you had to guess.
+Also give:
+- gst_percent: the GST rate the vendor applies (0, 5, 12, 18 or 28); if several, the most common, and mention the others in notes.
+- vendor_id: the id from our directory if clearly the same business (same name or GSTIN), else null.
+- brand: the brand(s) offered, short.
+- notes: one or two short plain-English sentences on what the manager must check (conversions, freight or loading, validity, delivery time). Empty string if nothing.
+
+Reply with JSON only, in exactly this shape:
+{"vendor_id":null,"vendor_name":"","vendor_gstin":"","vendor_phone":"","brand":"","gst_percent":18,"lines":[{"vendor_text":"","vendor_rate_text":"","item_id":null,"rate":null,"sure":true}],"notes":""}
+
+Quotation text:
+${(text||'(no text layer, read the images)').slice(0,60000)}`}
+function qErrCopy(e){return ({not_granted:'Reading was not allowed, so please type the rates below.',rate_limited:'Too many readings just now. Wait a minute and try again, or type the rates below.',lib:'Could not open the PDF reader. Check the internet connection, or type the rates below.',noimg:'Photos cannot be read in this view. Upload a PDF, or type the rates below.',image_rejected:'That picture could not be read. Try a clearer photo or the PDF.'})[e?.code]||'Could not read this quotation. Please type the rates below.'}
+A.qFile=async(rid,k,input)=>{
+  const files=[...(input.files||[])];if(!files.length)return;
+  const r=R(rid),cat=catsOf(r)[k],its=r.items.filter(i=>i.cat===cat),st=document.getElementById('q_st');
+  tmp.qfiles=files.map(f=>f.name);st.hidden=false;
+  if(!SAMPLE){st.className='note';st.textContent='Automatic reading is not available here. The file is attached, so please type the rates below.';return}
+  st.className='note info';st.textContent='Reading the quotation. This usually takes 15 to 60 seconds…';input.disabled=true;
+  const mine=tmp.qbusy=uid();
+  try{
+    let text='',imgs=[];
+    for(const f of files){
+      if(f.type==='application/pdf'||/\.pdf$/i.test(f.name)){const x=await readPdf(f,SAMPLE_IMG);text+=`\n=== ${f.name} ===${x.text}`;imgs.push(...x.imgs)}
+      else if(f.type.startsWith('image/'))imgs.push(f);
+    }
+    if(!SAMPLE_IMG){imgs=[];if(!text.replace(/[\s=\-a-z0-9.]*page \d+/gi,'').trim())throw {code:'noimg'}}
+    imgs=imgs.slice(0,SAMPLE_LIM||5);
+    const res=await SAMPLE.json(quotePrompt(r,cat,its,text),imgs.length?{images:imgs}:{});
+    if(tmp.qbusy!==mine||!document.getElementById('q_v'))return;
+    fillQuote(res,its,files);
+  }catch(e){if(document.getElementById('q_st')){st.className='note';st.textContent=qErrCopy(e)}}
+  finally{input.disabled=false}
+};
+function fillQuote(res,its,files){
+  const mark=el=>el&&el.classList.add('filled');
+  const sel=document.getElementById('q_v');
+  if(res?.vendor_id&&V(res.vendor_id)){sel.value=res.vendor_id;mark(sel)}
+  else if(res?.vendor_name){tmp.newVendor={name:String(res.vendor_name).slice(0,120),gstin:String(res.vendor_gstin||'').toUpperCase().slice(0,15),phone:String(res.vendor_phone||'').slice(0,30)};
+    const o=document.createElement('option');o.value='__new';o.textContent='New vendor: '+tmp.newVendor.name;sel.prepend(o);sel.value='__new';mark(sel)}
+  if(res?.brand){const b=document.getElementById('q_b');b.value=String(res.brand).slice(0,120);mark(b)}
+  const g=+res?.gst_percent;if([0,5,12,18,28].includes(g)){const s2=document.getElementById('q_g');s2.value=String(g);mark(s2)}
+  const ids=new Set(its.map(i=>i.id));
+  const lines=(Array.isArray(res?.lines)?res.lines:[]).slice(0,80).map(l=>({text:String(l?.vendor_text||'').slice(0,200),rateText:String(l?.vendor_rate_text||'').slice(0,80),itemId:ids.has(l?.item_id)?l.item_id:null,rate:+l?.rate>0?+l.rate:null,sure:l?.sure===true,remembered:false}));
+  // matches the manager confirmed before for this vendor win
+  const vid=sel.value,al=(S.aliases||{})[vid]||{};
+  lines.forEach(l=>{const ours=al[normTxt(l.text)];if(ours){const it=its.find(i=>i.name.toLowerCase()===ours.toLowerCase());if(it){l.itemId=it.id;l.sure=true;l.remembered=true}}});
+  tmp.qlines=lines;tmp.qmap={};
+  its.forEach(it=>{const cand=lines.map((l,k)=>({l,k})).filter(x=>x.l.itemId===it.id).sort((a,b)=>(b.l.sure-a.l.sure));const pick=cand[0];
+    tmp.qmap[it.id]=pick?pick.k:-1;if(pick&&pick.l.rate){const el=document.getElementById('q_'+it.id);el.value=Math.round(pick.l.rate*100)/100;mark(el)}
+    drawMatch(it.id,pick?(pick.l.sure&&cand.length===1?'ok':'check'):'none')});
+  const used=new Set(Object.values(tmp.qmap));
+  const unmatched=lines.filter((l,k)=>!used.has(k));
+  const flagged=its.filter(it=>document.getElementById('qm_'+it.id)?.classList.contains('amber')).length;
+  const st=document.getElementById('q_st');st.className='note good';
+  st.innerHTML=`Filled in from ${esc(files.map(f=>f.name).join(', '))}. Check every number against the quotation before saving.`+
+    (flagged?`<br><b>${flagged} item${flagged>1?'s':''} need${flagged>1?'':'s'} your check</b> (marked in amber below). Pick the matching line from the quotation.`:'')+
+    (tmp.newVendor?`<br>This vendor is not in your directory yet. Saving will add <b>${esc(tmp.newVendor.name)}</b>${tmp.newVendor.gstin?' (GSTIN '+esc(tmp.newVendor.gstin)+')':''}.`:'')+
+    (res?.notes?`<br><b>Please check:</b> ${esc(String(res.notes).slice(0,500))}`:'')+
+    (unmatched.length?`<br><b>Lines in the quotation that match none of your items:</b> ${unmatched.map(l=>esc(l.text)).join('; ')}`:'');
+}
+function drawMatch(itemId,state){
+  const box=document.getElementById('qm_'+itemId);if(!box)return;const lines=tmp.qlines||[],k=tmp.qmap[itemId],l=lines[k];
+  box.hidden=false;box.className='qmatch'+(state==='ok'?'':' amber');
+  const opts=`<option value="-1">${l?'None of these':'Choose the matching line'}</option>`+lines.map((x,j)=>`<option value="${j}" ${j===k?'selected':''}>${esc(x.text)}${x.rateText?' · '+esc(x.rateText):''}</option>`).join('');
+  box.innerHTML=(l?`<span>Vendor wrote: <b>${esc(l.text)}</b>${l.rateText?' · '+esc(l.rateText):''}${l.remembered?' <span class="chip ok">Matched before</span>':''}</span>`:'<span><b>Not found in the quotation.</b> Pick a line, or type the rate.</span>')
+    +(state==='ok'?`<button type="button" class="linkbtn small" onclick="A.qMatchEdit('${itemId}')">Wrong match?</button>`:`${l?'<span>Not sure this is the same item. Confirm or pick the right line:</span>':''}<select aria-label="Matching line in the quotation" onchange="A.qLine('${itemId}',+this.value)">${opts}</select>${l?`<button type="button" class="btn sm" onclick="A.qLine('${itemId}',${k})">Yes, same item</button>`:''}`);
+}
+A.qMatchEdit=id=>drawMatch(id,'check');
+A.qLine=(itemId,k)=>{tmp.qmap[itemId]=k;tmp.qconfirmed=tmp.qconfirmed||{};tmp.qconfirmed[itemId]=k>=0;const l=tmp.qlines[k];const el=document.getElementById('q_'+itemId);
+  if(l){if(l.rate)el.value=Math.round(l.rate*100)/100;else el.value='';el.classList.add('filled');drawMatch(itemId,'ok')}else{el.value='';el.classList.remove('filled');drawMatch(itemId,'none')}};
+A.saveQuote=(rid,k)=>{const r=R(rid),cat=catsOf(r)[k],its=r.items.filter(i=>i.cat===cat),rates={};
+  for(const it of its){const x=+val('q_'+it.id);if(!(x>0)){document.getElementById('q_err').textContent='Enter a rate for every item.';return}rates[it.id]=x}
+  let vid=val('q_v');
+  if(vid==='__new'){const nv=tmp.newVendor;vid=uid();S.vendors.push({id:vid,name:nv.name,contact:'',phone:nv.phone,email:'',gstin:nv.gstin,city:'',cats:cat});log('Added vendor '+nv.name+' from a quotation')}
+  let learnt=0;S.aliases=S.aliases||{};
+  its.forEach(it=>{const l=(tmp.qlines||[])[tmp.qmap?.[it.id]];if(!l||!l.text)return;const key=normTxt(l.text);if(!key||key===normTxt(it.name))return;
+    if((tmp.qconfirmed?.[it.id]||l.sure)&&(S.aliases[vid]||{})[key]!==it.name){(S.aliases[vid]=S.aliases[vid]||{})[key]=it.name;learnt++}});
+  if(learnt)log(`Remembered ${learnt} item name match${learnt>1?'es':''} for ${V(vid).name}`,r.no);
+  const q={id:uid(),vendorId:vid,brand:val('q_b').trim()||'As requested',gst:+val('q_g'),rates,at:now(),files:tmp.qfiles||[]};(r.quotes[cat]=r.quotes[cat]||[]).push(q);
+  log(`Added quote from ${V(q.vendorId).name} for ${cat}${q.files.length?' (from '+q.files.join(', ')+')':''}`,r.no);tmp.qbusy=null;A.close();render();toast('Quote saved')};
+
+/* Excel quote comparison (item-wise, print-ready) */
+async function excelLib(){if(window.ExcelJS)return window.ExcelJS;await loadScript('https://cdn.jsdelivr.net/npm/exceljs@4.4.0/dist/exceljs.min.js');return window.ExcelJS}
+const colL=n=>{let s='';while(n>0){const m=(n-1)%26;s=String.fromCharCode(65+m)+s;n=Math.floor((n-1)/26)}return s};
+function buildSheet(wb,r,cat){
+  const its=r.items.filter(i=>i.cat===cat),qs=r.quotes[cat]||[],nV=Math.max(qs.length,1),F=5,last=F+nV*3+2,cCheap=F+nV*3+1,cSel=F+nV*3+2;
+  const ws=wb.addWorksheet(cat.replace(/[\\/*?:\[\]]/g,' ').slice(0,31),{pageSetup:{paperSize:9,orientation:'landscape',fitToPage:true,fitToWidth:1,fitToHeight:0,horizontalCentered:true,margins:{left:.4,right:.4,top:.5,bottom:.5,header:.2,footer:.2}},views:[{state:'frozen',xSplit:2,ySplit:7}]});
+  ws.pageSetup.printTitlesRow='5:7';ws.headerFooter.oddFooter='&L'+r.no+'&RPage &P of &N';
+  const fill=c=>({type:'pattern',pattern:'solid',fgColor:{argb:c}}),green=fill('FFDDF1E8'),grey=fill('FFF2F4F3'),amber=fill('FFFDF3E2');
+  const thin={style:'thin',color:{argb:'FFBFC7C2'}},box={top:thin,left:thin,bottom:thin,right:thin},NUM='#,##,##0.00',INT='#,##,##0.##';
+  ws.mergeCells(1,1,1,last);ws.getCell(1,1).value='KAILASHA GROUP · QUOTE COMPARISON';ws.getCell(1,1).font={bold:true,size:14,color:{argb:'FF0E7A5C'}};
+  ws.mergeCells(2,1,2,last);ws.getCell(2,1).value=`Requisition ${r.no}   ·   ${site(r.site).name}   ·   ${cat}`;ws.getCell(2,1).font={bold:true};
+  ws.mergeCells(3,1,3,last);ws.getCell(3,1).value=`Needed by ${fmtD(r.deadline)}   ·   Prepared ${fmtDT(now())} by ${uname(S.me)}   ·   Status: ${STAGE[r.stage].label}`;ws.getCell(3,1).font={color:{argb:'FF68736D'}};
+  ['S.No','Item','Qty','Unit','Last order rate'].forEach((h,i)=>{ws.mergeCells(5,i+1,7,i+1);ws.getCell(5,i+1).value=h});
+  ws.mergeCells(5,cCheap,7,cCheap);ws.getCell(5,cCheap).value='Cheapest vendor';ws.mergeCells(5,cSel,7,cSel);ws.getCell(5,cSel).value='Chosen vendor';
+  const tot=qs.map(q=>quoteTotal(its,q)),minT=Math.min(...tot);
+  qs.forEach((q,j)=>{const c0=F+1+j*3,v=V(q.vendorId);
+    ws.mergeCells(5,c0,5,c0+2);ws.getCell(5,c0).value=v?.name||'Vendor';
+    ws.mergeCells(6,c0,6,c0+2);ws.getCell(6,c0).value=`GSTIN ${v?.gstin||'-'} · GST ${q.gst}%`;ws.getCell(6,c0).font={size:9,color:{argb:'FF68736D'}};
+    ['Brand','Rate (₹)','Amount (₹)'].forEach((h,i)=>ws.getCell(7,c0+i).value=h)});
+  if(!qs.length){ws.mergeCells(5,F+1,7,F+3);ws.getCell(5,F+1).value='No quotes yet'}
+  for(let rr=5;rr<=7;rr++)for(let c=1;c<=last;c++){const x=ws.getCell(rr,c);x.fill=grey;x.border=box;x.font={...(x.font||{}),bold:rr!==6};x.alignment={vertical:'middle',horizontal:c===2?'left':'center',wrapText:true}}
+  let row=8;
+  its.forEach((it,n)=>{
+    const rates=qs.map(q=>+q.rates[it.id]||0),pos=rates.filter(x=>x>0),m=pos.length?Math.min(...pos):0,lr=lastRate(it.name,r.site,r.id),aw=awardOf(r,it);
+    ws.getCell(row,1).value=n+1;ws.getCell(row,2).value=it.name+(it.spec?`\n${it.spec}`:'')+(it.subUnit?`\n(${it.subUnit})`:'');
+    ws.getCell(row,3).value=it.qty;ws.getCell(row,3).numFmt=INT;ws.getCell(row,4).value=it.unit;
+    const lc=ws.getCell(row,5);lc.value=lr?lr.rate:'New item';if(lr){lc.numFmt=NUM;lc.note=`${lr.vendor}, ${fmtD(lr.at)} (${lr.po})`}
+    qs.forEach((q,j)=>{const c0=F+1+j*3,x=rates[j];ws.getCell(row,c0).value=q.brand;
+      const rc=ws.getCell(row,c0+1);rc.value=x||null;rc.numFmt=NUM;
+      const ac=ws.getCell(row,c0+2);ac.value=x?{formula:`C${row}*${colL(c0+1)}${row}`,result:x*it.qty}:null;ac.numFmt=NUM;
+      if(x&&x===m&&qs.length>1){rc.fill=green;ac.fill=green;rc.font={bold:true,color:{argb:'FF0E7A5C'}}}
+      if(x&&lr&&Math.abs((x-lr.rate)/lr.rate)>=.005){const pct=(x-lr.rate)/lr.rate*100;rc.note=`${pct>0?'Up':'Down'} ${Math.abs(pct).toFixed(1)}% vs last order ${lr.rate}`;if(!(x===m&&qs.length>1))rc.fill=amber}});
+    ws.getCell(row,cCheap).value=qs.filter((q,j)=>rates[j]===m&&m>0).map(q=>V(q.vendorId)?.name).join(', ')||'-';ws.getCell(row,cCheap).font={bold:true};
+    ws.getCell(row,cSel).value=aw&&['final','issue','approved'].includes(r.stage)?V(aw.vendorId)?.name:'';
+    for(let c=1;c<=last;c++){const x=ws.getCell(row,c);x.border=box;x.alignment={vertical:'top',wrapText:true,horizontal:c===2||c>=cCheap||(c>F&&(c-F-1)%3===0)?'left':c<=4?'center':'right'}}
+    row++});
+  const first=8,lastItem=row-1;
+  [['Total before GST'],['GST'],['Total with GST'],['Rank (L1 = lowest)']].forEach(([label],k)=>{const rr=row+k;ws.mergeCells(rr,1,rr,F);ws.getCell(rr,1).value=label;ws.getCell(rr,1).alignment={horizontal:'right'};
+    qs.forEach((q,j)=>{const c0=F+1+j*3,AC=colL(c0+2);ws.mergeCells(rr,c0,rr,c0+1);
+      const cell=ws.getCell(rr,c0+2);const sub=its.reduce((s2,it)=>s2+(+q.rates[it.id]||0)*it.qty,0);
+      if(k===0)cell.value={formula:`SUM(${AC}${first}:${AC}${lastItem})`,result:sub};
+      if(k===1){ws.getCell(rr,c0).value=`@ ${q.gst}%`;cell.value={formula:`${AC}${rr-1}*${q.gst/100}`,result:sub*q.gst/100}}
+      if(k===2){cell.value={formula:`${AC}${rr-2}+${AC}${rr-1}`,result:tot[j]};if(tot[j]===minT&&qs.length>1)cell.fill=green}
+      if(k===3){const rank=[...tot].sort((a,b)=>a-b).indexOf(tot[j])+1;cell.value='L'+rank;if(rank===1)cell.fill=green}
+      cell.numFmt=NUM});
+    for(let c=1;c<=last;c++){const x=ws.getCell(rr,c);x.border=box;x.font={bold:true};if(x.fill?.fgColor?.argb!=='FFDDF1E8')x.fill=grey;if(c>F)x.alignment={horizontal:'right'}}});
+  row+=6;
+  ws.getCell(row,1).value='Green: lowest rate in the row and lowest total. Amber: rate differs from the last order (hover the cell for details). Rates are before GST.';ws.getCell(row,1).font={italic:true,size:9,color:{argb:'FF68736D'}};
+  row+=3;[['Prepared by',2],['Checked by',F+1],['Vendors confirmed by',Math.min(F+4,last)]].forEach(([t2,c])=>{ws.getCell(row,c).value='____________________';ws.getCell(row+1,c).value=t2});
+  ws.getColumn(1).width=6;ws.getColumn(2).width=36;ws.getColumn(3).width=10;ws.getColumn(4).width=9;ws.getColumn(5).width=13;
+  qs.forEach((q,j)=>{ws.getColumn(F+1+j*3).width=15;ws.getColumn(F+2+j*3).width=12;ws.getColumn(F+3+j*3).width=14});ws.getColumn(cCheap).width=20;ws.getColumn(cSel).width=20;
+}
+A.xlsx=async(rid,btn)=>{
+  const r=R(rid);if(!DL)return toast('Saving files is not available in this view. Open the page in a browser on a computer.');
+  const old=btn.textContent;btn.disabled=true;btn.textContent='Preparing…';
+  try{const X=await excelLib();const wb=new X.Workbook();wb.creator='Kailasha Requisitions';wb.created=new Date();
+    catsOf(r).forEach(cat=>buildSheet(wb,r,cat));
+    const buf=await wb.xlsx.writeBuffer();
+    await DL.save({filename:`Quote comparison ${r.no.replace(/\//g,'-')}.xlsx`,data:buf});
+    log('Downloaded quote comparison (Excel)',r.no);save();toast('Saved. Open it in Excel and print. It fits one page wide.')}
+  catch(e){toast(e?.code==='declined'?'Download cancelled':e?.code==='lib'?'Could not load the Excel maker. Check the internet connection.':'Could not save the file. Please try again.')}
+  finally{btn.disabled=false;btn.textContent=old}};
+
+A.delQuote=(rid,k,qid)=>{const r=R(rid),cat=catsOf(r)[k];r.quotes[cat]=r.quotes[cat].filter(q=>q.id!==qid);log('Removed a quote for '+cat,r.no);render()};
+A.copy=()=>{navigator.clipboard?.writeText(tmp.sheet).then(()=>toast('Copied'),()=>{const s=window.getSelection(),rg=document.createRange();rg.selectNodeContents(document.getElementById('sh'));s.removeAllRanges();s.addRange(rg);toast('Text selected. Press copy.')})};
+/* Request for quotation, laid out like a Tally proforma invoice */
+const coInfo=n=>(S.companyInfo||{})[n]||{};
+function rfqData(r,cat,vendor){const s=site(r.site),co=r.company||s.companies[0];
+  return {r,cat,s,co,coAddr:coInfo(co).address||'Address to be added in Settings',coGstin:coInfo(co).gstin||'To be added',siteAddr:s.address||'Address to be added in Settings',vendor,
+    items:r.items.filter(i=>i.cat===cat),date:new Date()}}
+function rfqDesc(it){return [it.brand?`Brand: ${it.brand} or equivalent`:'',it.subUnit?`Packing: ${it.subUnit}`:'',it.spec||''].filter(Boolean).join('\n')}
+const RFQ_TERMS=['Please quote your rate per unit before GST, and mention the GST % and HSN code for each item.','Rates should include delivery to the site address above. Mention freight or loading charges separately if any.','Mention delivery time and how long your quote is valid.','Quote the brand you are offering if different from the one asked.','Please reply on WhatsApp or email with this sheet filled in, or your own proforma invoice.'];
+function rfqHtml(d){
+  return `<div class="rfq"><div class="rfq-t">REQUEST FOR QUOTATION</div>
+  <div class="rfq-g"><div><small>Buyer (Bill to)</small><b>${esc(d.co)}</b><span>${esc(d.coAddr)}</span><span>GSTIN/UIN: ${esc(d.coGstin)}</span><span>State Name: West Bengal, Code: 19</span></div>
+    <div class="rfq-k"><div><small>Ref. No.</small><b>${esc(d.r.no)}</b></div><div><small>Dated</small><b>${fmtD(d.date)}</b></div><div><small>Needed by</small><b>${fmtD(d.r.deadline)}</b></div><div><small>Category</small><b>${esc(d.cat)}</b></div></div>
+    <div><small>Consignee (Ship to)</small><b>${esc(d.s.name)}</b><span>${esc(d.siteAddr)}</span></div>
+    <div><small>Supplier</small>${d.vendor?`<b>${esc(d.vendor.name)}</b><span>${esc(d.vendor.city||'')}</span><span>GSTIN/UIN: ${esc(d.vendor.gstin||'')}</span><span>Ph: ${esc(d.vendor.phone||'')}</span>`:'<span class="muted">Chosen when you send</span>'}</div></div>
+  <div class="tw" style="border-radius:0"><table><thead><tr><th>Sl</th><th>Description of Goods</th><th>HSN/SAC</th><th>GST %</th><th class="num">Quantity</th><th class="num">Rate</th><th>per</th><th class="num">Amount</th></tr></thead>
+  <tbody>${d.items.map((it,i)=>`<tr><td>${i+1}</td><td><b>${esc(it.name)}</b>${rfqDesc(it)?`<small style="white-space:pre-line">${esc(rfqDesc(it))}</small>`:''}</td><td></td><td></td><td class="num">${nf(it.qty)} ${esc(it.unit)}</td><td></td><td>${esc(it.unit)}</td><td></td></tr>`).join('')}
+  <tr><td></td><td><i>Freight / loading, if any</i></td><td></td><td></td><td></td><td></td><td></td><td></td></tr></tbody>
+  <tfoot><tr><td></td><td>Total</td><td></td><td></td><td></td><td></td><td></td><td></td></tr></tfoot></table></div>
+  <div class="rfq-f"><div><small>Terms</small><ol>${RFQ_TERMS.map(t2=>`<li>${esc(t2)}</li>`).join('')}</ol></div><div class="rfq-s"><b>for KAILASHA GROUP</b><span>Authorised Signatory</span></div></div></div>`}
+async function pdfMaker(){if(window.jspdf?.jsPDF&&window.jspdf.jsPDF.API.autoTable)return window.jspdf.jsPDF;await loadScript('https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js');await loadScript('https://cdn.jsdelivr.net/npm/jspdf-autotable@3.8.2/dist/jspdf.plugin.autotable.min.js');return window.jspdf.jsPDF}
+function rfqPdf(J,d){
+  const doc=new J({unit:'mm',format:'a4'}),L=10,W=190,R=L+W,M=L+W/2,ink=[24,32,28],mute=[104,115,109],line=[120,128,124];
+  doc.setDrawColor(...line);doc.setLineWidth(.25);doc.setTextColor(...ink);
+  doc.setFont('helvetica','bold');doc.setFontSize(13);doc.text('REQUEST FOR QUOTATION',105,15,{align:'center'});
+  doc.setFont('helvetica','normal');doc.setFontSize(7.5);doc.setTextColor(...mute);doc.text('Kailasha Group · please fill in rates and return, or send your proforma invoice',105,19.5,{align:'center'});
+  const top=22;
+  const block=(x,y,w,label,bold,lines)=>{doc.setFontSize(7.5);doc.setTextColor(...mute);doc.setFont('helvetica','normal');doc.text(label,x+2,y+4);doc.setTextColor(...ink);doc.setFont('helvetica','bold');doc.setFontSize(9.5);let yy=y+8.5;doc.splitTextToSize(bold,w-4).forEach(t2=>{doc.text(t2,x+2,yy);yy+=4});doc.setFont('helvetica','normal');doc.setFontSize(8);lines.filter(Boolean).forEach(l=>doc.splitTextToSize(l,w-4).forEach(t2=>{doc.text(t2,x+2,yy);yy+=3.6}))};
+  const h1=34,h2=30;
+  doc.rect(L,top,W,h1+h2);doc.line(M,top,M,top+h1+h2);doc.line(L,top+h1,R,top+h1);
+  block(L,top,W/2,'Buyer (Bill to)',d.co,[d.coAddr,'GSTIN/UIN: '+d.coGstin,'State Name: West Bengal, Code: 19']);
+  // right key cells 2x2 + 1 row
+  const cw=W/4,ch=h1/3;const cell=(cx,cy,w,label,val)=>{doc.rect(cx,cy,w,ch);doc.setFontSize(7.5);doc.setTextColor(...mute);doc.text(label,cx+2,cy+3.8);doc.setTextColor(...ink);doc.setFont('helvetica','bold');doc.setFontSize(8.5);doc.text(doc.splitTextToSize(val,w-4)[0]||'',cx+2,cy+8.3);doc.setFont('helvetica','normal')};
+  cell(M,top,cw,'Ref. No.',d.r.no);cell(M+cw,top,cw,'Dated',fmtD(d.date));
+  cell(M,top+ch,cw,'Needed by',fmtD(d.r.deadline));cell(M+cw,top+ch,cw,'Category',d.cat);
+  cell(M,top+2*ch,cw,'Mode/Terms of Payment','');cell(M+cw,top+2*ch,cw,'Quote valid till','');
+  block(L,top+h1,W/2,'Consignee (Ship to)',d.s.name,[d.siteAddr,'State Name: West Bengal, Code: 19']);
+  block(M,top+h1,W/2,'Supplier',d.vendor?d.vendor.name:'',d.vendor?[d.vendor.city,'GSTIN/UIN: '+(d.vendor.gstin||''),'Ph: '+(d.vendor.phone||'')]:[]);
+  const body=d.items.map((it,i)=>[String(i+1),{content:it.name+(rfqDesc(it)?'\n'+rfqDesc(it):''),styles:{}},'','',nf(it.qty)+' '+it.unit,'',it.unit,'']);
+  body.push(['',{content:'Freight / loading, if any',styles:{fontStyle:'italic'}},'','','','','','']);
+  const blanks=Math.max(0,8-body.length);for(let i=0;i<blanks;i++)body.push(['','','','','','','','']);
+  doc.autoTable({startY:top+h1+h2,margin:{left:L,right:L},theme:'grid',
+    head:[['Sl\nNo','Description of Goods','HSN/SAC','GST %','Quantity','Rate','per','Amount']],
+    body,foot:[['',{content:'Total',styles:{halign:'right'}},'','','','','','']],
+    styles:{font:'helvetica',fontSize:8.5,textColor:ink,lineColor:line,lineWidth:.25,cellPadding:1.8,valign:'top',minCellHeight:9},
+    headStyles:{fillColor:[255,255,255],textColor:ink,fontStyle:'bold',halign:'center',valign:'middle',minCellHeight:8},
+    footStyles:{fillColor:[255,255,255],textColor:ink,fontStyle:'bold',minCellHeight:8},
+    columnStyles:{0:{cellWidth:9,halign:'center'},1:{cellWidth:'auto'},2:{cellWidth:18},3:{cellWidth:13},4:{cellWidth:26,halign:'right'},5:{cellWidth:20,halign:'right'},6:{cellWidth:13},7:{cellWidth:24,halign:'right'}},
+    didParseCell:h=>{if(h.section==='body'&&h.column.index===1&&h.cell.raw&&h.cell.raw.content){}}});
+  let y=doc.lastAutoTable.finalY;
+  doc.rect(L,y,W,10);doc.setFontSize(7.5);doc.setTextColor(...mute);doc.text('Amount Chargeable (in words)',L+2,y+4);y+=10;
+  const th=44;doc.rect(L,y,W,th);doc.line(L+W*0.62,y,L+W*0.62,y+th);
+  doc.setTextColor(...mute);doc.text('Terms',L+2,y+4);doc.setTextColor(...ink);doc.setFontSize(7.8);let yy=y+8;
+  RFQ_TERMS.forEach((t2,i)=>doc.splitTextToSize(`${i+1}. ${t2}`,W*0.62-5).forEach(l=>{doc.text(l,L+2,yy);yy+=3.5}));
+  doc.setFont('helvetica','bold');doc.setFontSize(8.5);doc.text('for KAILASHA GROUP',R-2,y+5,{align:'right'});doc.setFont('helvetica','normal');doc.setFontSize(8);doc.text('Authorised Signatory',R-2,y+th-3,{align:'right'});
+  y+=th;doc.rect(L,y,W,16);doc.setFontSize(7.5);doc.setTextColor(...mute);doc.text("Supplier's seal and signature",L+2,y+4);doc.text('Date',L+W*0.62+2,y+4);
+  doc.setFontSize(7);doc.text('This is a computer generated document.',105,y+21,{align:'center'});
+  return doc}
+A.sheet=(rid,k)=>{const r=R(rid),cat=catsOf(r)[k],its=r.items.filter(i=>i.cat===cat);
+  tmp.sheet=`Kailasha Group · Request for quotation\nRef: ${r.no} · ${cat}\nDeliver to: ${site(r.site).name}\nNeeded by: ${fmtD(r.deadline)}\n\n${its.map((it,i)=>`${i+1}. ${it.name}: ${nf(it.qty)} ${it.unit}${it.subUnit?' ('+it.subUnit+')':''}${it.brand?', brand '+it.brand+' or equal':''}${it.spec?'\n   '+it.spec:''}`).join('\n')}\n\nPlease reply with your rate per unit, GST %, HSN and delivery time.`;
+  tmp.sv=[];tmp.svq='';tmp.svr={rid,k};
+  modal(`<h2>Request for quotation · ${esc(cat)}</h2>
+  <div class="sec" style="gap:6px"><span class="small muted">Send to (choose one or more vendors)</span>
+    <input id="svq" placeholder="Search vendors" oninput="tmp.svq=this.value;A.svDraw()" aria-label="Search vendors">
+    <div class="vpick" id="svlist"></div><div class="pickrow" id="svchips"></div></div>
+  <div id="rfqp">${rfqHtml(rfqData(r,cat,null))}</div>
+  <p class="hint">Each vendor gets their own copy with their name in the Supplier box. Laid out like a Tally proforma invoice, A4. In the full version, Send opens WhatsApp or email with the PDF attached.</p>
+  <div class="mact"><button class="btn" onclick="A.copy()">Copy as text</button><button class="btn" id="svdl" onclick="A.rfqPdf('${rid}',${k},this)">Download PDF</button><button class="btn primary" id="svsend" onclick="A.sendSheet('${rid}',${k})">Send on WhatsApp</button></div><pre id="sh" hidden>${esc(tmp.sheet)}</pre>`);
+  A.svDraw()};
+A.svDraw=()=>{const {rid,k}=tmp.svr,r=R(rid),cat=catsOf(r)[k],q=(tmp.svq||'').toLowerCase();
+  const fits=v=>(v.cats||'').toLowerCase().includes(cat.toLowerCase());
+  const list=S.vendors.filter(v=>!q||(v.name+' '+v.cats+' '+v.city).toLowerCase().includes(q)).sort((a,b)=>fits(b)-fits(a)||a.name.localeCompare(b.name));
+  document.getElementById('svlist').innerHTML=list.map(v=>`<label class="vrow"><input type="checkbox" ${tmp.sv.includes(v.id)?'checked':''} onchange="A.svToggle('${v.id}')"><span><b>${esc(v.name)}</b><small>${esc(v.phone)}${v.city?' · '+esc(v.city):''}${fits(v)?' · supplies '+esc(cat):''}</small></span></label>`).join('')||'<p class="small muted" style="padding:8px">No vendors match.</p>';
+  document.getElementById('svchips').innerHTML=tmp.sv.length?`<span class="small muted">${tmp.sv.length} selected:</span>`+tmp.sv.map(id=>`<span class="pick">${esc(V(id).name)} <button class="linkbtn" aria-label="Remove ${esc(V(id).name)}" onclick="A.svToggle('${id}')">×</button></span>`).join('')+(tmp.sv.length>1?' <button class="linkbtn small" onclick="tmp.sv=[];A.svDraw()">Clear</button>':''):'';
+  const n=tmp.sv.length;document.getElementById('svsend').textContent=n>1?`Send to ${n} vendors on WhatsApp`:'Send on WhatsApp';document.getElementById('svdl').textContent=n>1?`Download ${n} PDFs`:'Download PDF';
+  document.getElementById('rfqp').innerHTML=rfqHtml(rfqData(r,cat,n?V(tmp.sv[0]):null))+(n>1?`<p class="hint" style="margin-top:6px">Showing ${esc(V(tmp.sv[0]).name)}'s copy. The other ${n-1} look the same with their own name.</p>`:'')};
+A.svToggle=id=>{tmp.sv=tmp.sv.includes(id)?tmp.sv.filter(x=>x!==id):[...tmp.sv,id];A.svDraw()};
+async function zipLib(){if(window.JSZip)return window.JSZip;await loadScript('https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js');return window.JSZip}
+A.rfqPdf=async(rid,k,btn)=>{const r=R(rid),cat=catsOf(r)[k],vs=(tmp.sv||[]).map(V).filter(Boolean);
+  if(!DL)return toast('Saving files is not available in this view. Open the page in a browser on a computer.');
+  const old=btn.textContent;btn.disabled=true;btn.textContent='Preparing…';
+  const base=`RFQ ${r.no.replace(/\//g,'-')} ${cat.replace(/[^\w ]+/g,'')}`,fn=v=>`${base}${v?' - '+v.name.replace(/[^\w ]+/g,''):''}.pdf`;
+  try{const J=await pdfMaker();
+    if(vs.length<=1){const v=vs[0]||null;await DL.save({filename:fn(v),data:rfqPdf(J,rfqData(r,cat,v)).output('arraybuffer')})}
+    else{const Z=await zipLib(),z=new Z();vs.forEach(v=>z.file(fn(v),rfqPdf(J,rfqData(r,cat,v)).output('arraybuffer')));await DL.save({filename:base+` (${vs.length} vendors).zip`,data:await z.generateAsync({type:'arraybuffer'})})}
+    log(`Downloaded quotation request PDF for ${cat}${vs.length?' ('+vs.map(v=>v.name).join(', ')+')':''}`,r.no);save();toast(vs.length>1?`${vs.length} PDFs saved in one zip file`:'PDF saved')}
+  catch(e){toast(e?.code==='declined'?'Download cancelled':e?.code==='lib'?'Could not load the PDF maker. Check the internet connection.':'Could not save the PDF. Please try again.')}
+  finally{btn.disabled=false;btn.textContent=old}};
+A.sendSheet=(rid,k)=>{const r=R(rid),cat=catsOf(r)[k],vs=(tmp.sv||[]).map(V).filter(Boolean);if(!vs.length)return toast('Choose at least one vendor to send to');
+  vs.forEach(v=>send([],`Request for quotation ${r.no} · ${cat} (PDF addressed to ${v.name})`,'Quote request',now(),`${v.name} (${v.phone})`));
+  log(`Sent ${cat} sheet to ${vs.map(v=>v.name).join(', ')}`,r.no);A.close();render();toast(vs.length>1?`Queued for ${vs.length} vendors`:'Queued for '+vs[0].name)};
+
+/* PO actions */
+A.receipt=id=>{const p=P(id);modal(`<h2>Record material received</h2><p class="small muted">${p.no} · ${esc(V(p.vendorId).name)}</p>
+  ${p.lines.map((l,i)=>`<label>${esc(l.name)} · ${nf(l.qty-l.received)} ${esc(l.unit)} pending<input id="rc_${i}" type="number" inputmode="decimal" step="any" min="0" max="${l.qty-l.received}" value="${l.qty-l.received}"></label>`).join('')}
+  <label>Delivery challan number<input id="rc_ch" placeholder="e.g. DC-4521"></label><p class="err" id="rc_err"></p>
+  <p class="hint">Saved once here. It goes to stock and to the Tally queue automatically.</p>
+  <div class="mact"><button class="btn" onclick="A.close()">Cancel</button><button class="btn primary" onclick="A.doReceipt('${id}')">Save receipt</button></div>`)};
+A.doReceipt=id=>{const p=P(id),got=p.lines.map((l,i)=>+val('rc_'+i)||0);
+  if(got.some((x,i)=>x<0||x>p.lines[i].qty-p.lines[i].received+1e-9)){document.getElementById('rc_err').textContent='Received quantity cannot be more than what is pending.';return}
+  if(!got.some(x=>x>0)){document.getElementById('rc_err').textContent='Enter at least one quantity.';return}
+  const ch=val('rc_ch').trim();
+  got.forEach((x,i)=>{if(!x)return;const l=p.lines[i];l.received+=x;stockAdd(p.site,l.name,l.unit,x,'Received',S.me,'Against '+p.no,p.cat)});
+  p.receipts.push({at:now(),by:S.me,challan:ch,lines:got});
+  const txt=got.map((x,i)=>x?`${nf(x)} ${p.lines[i].unit} ${p.lines[i].name}`:'').filter(Boolean).join(', ');
+  S.tally.unshift({id:uid(),at:now(),po:p.no,vendor:V(p.vendorId).name,text:'Receipt '+txt,status:'Waiting for Tally connector'});
+  log(`Recorded receipt of ${txt}${ch?' (challan '+ch+')':''}`,p.no);
+  if(p.lines.every(l=>l.received>=l.qty))p.status='done';
+  A.close();render();toast(p.status==='done'?'All material received. PO complete.':'Receipt saved. PO stays open for the rest.')};
+A.qtyAsk=id=>{const p=P(id);modal(`<h2>Request quantity change</h2><p class="small muted">Goes straight to the procurement manager. Up to 10% they can approve alone. More than 10% also needs ${p.site==='KAL'?'Ravi':'Ajay'}.</p>
+  <label>Item<select id="qc_l">${p.lines.map((l,i)=>`<option value="${i}">${esc(l.name)} (now ${nf(l.qty)} ${esc(l.unit)})</option>`).join('')}</select></label>
+  <label>New quantity<input id="qc_q" type="number" inputmode="decimal" step="any"></label><label>Reason<textarea id="qc_r"></textarea></label><p class="err" id="qc_err"></p>
+  <div class="mact"><button class="btn" onclick="A.close()">Cancel</button><button class="btn primary" onclick="A.doQty('${id}')">Send request</button></div>`)};
+A.doQty=id=>{const p=P(id),i=+val('qc_l'),to=+val('qc_q'),l=p.lines[i],why=val('qc_r').trim();
+  if(!(to>0)||to===l.qty){document.getElementById('qc_err').textContent='Enter a new quantity different from the current one.';return}
+  if(to<l.received){document.getElementById('qc_err').textContent=`Already received ${nf(l.received)}. The new quantity cannot be lower.`;return}
+  if(!why){document.getElementById('qc_err').textContent='Give a short reason.';return}
+  const pct=Math.round((to-l.qty)/l.qty*1000)/10;
+  S.qty.push({id:uid(),poId:id,line:i,from:l.qty,to,pct,reason:why,by:S.me,at:now(),status:'pm',trio:site(p.site).type==='mfg'?'ravi':'ajay'});
+  log(`Asked to change ${l.name} from ${nf(l.qty)} to ${nf(to)} (${pct}%)`,p.no);send(targets('pm'),`${p.no}: quantity change request for ${l.name}, ${nf(l.qty)} to ${nf(to)} (${pct}%).`,'Quantity change');A.close();render();toast('Sent to procurement manager')};
+function applyQty(q){const p=P(q.poId),l=p.lines[q.line];l.qty=q.to;const r=R(p.reqId);const it=r?.items.find(x=>x.id===l.itemId);if(it)it.qty=q.to;q.status='approved';if(p.lines.every(x=>x.received>=x.qty))p.status='done';log(`Quantity change approved: ${l.name} now ${nf(q.to)} ${l.unit}`,p.no);send(targets('store',p.site),`${p.no}: ${l.name} quantity changed to ${nf(q.to)} ${l.unit}.`,'Quantity change')}
+A.qcOk=id=>{const q=S.qty.find(x=>x.id===id),p=P(q.poId);if(q.status==='pm'){if(Math.abs(q.pct)<=10){applyQty(q);toast('Approved')}else{q.status='trio';log(`Procurement manager agreed to quantity change; sent to ${uname(q.trio)} (over 10%)`,p.no);send(targets(q.trio),`${p.no}: quantity change of ${q.pct}% needs your approval.`,'Quantity change');toast('Over 10%, sent to '+uname(q.trio))}}else{applyQty(q);toast('Approved')}render()};
+A.qcNo=id=>{const q=S.qty.find(x=>x.id===id);q.status='declined';log('Declined quantity change',P(q.poId).no);render();toast('Declined')};
+A.closeSelf=id=>modal(`<h2>Close the rest as not required</h2><p class="small muted">Whatever is still pending on this PO will not be delivered.</p><label>Reason<textarea id="cl"></textarea></label><div class="mact"><button class="btn" onclick="A.close()">Cancel</button><button class="btn primary" onclick="A.doCloseSelf('${id}')">Close PO</button></div>`);
+A.doCloseSelf=id=>{const p=P(id),n=val('cl').trim()||'Not required';p.status='closed';p.closeNote=`Closed by ${uname(S.me)}: ${n}`;log('Closed PO: '+n,p.no);A.close();render();toast('PO closed')};
+A.closeAsk=id=>modal(`<h2>Request to close this PO</h2><p class="small muted">The storekeeper must okay it before it closes.</p><label>Reason<textarea id="cl"></textarea></label><div class="mact"><button class="btn" onclick="A.close()">Cancel</button><button class="btn primary" onclick="A.doCloseAsk('${id}')">Send to storekeeper</button></div>`);
+A.doCloseAsk=id=>{const p=P(id),n=val('cl').trim();if(!n)return toast('Give a reason');p.closeReq={by:S.me,reason:n,status:'pending',at:now()};log('Asked storekeeper to okay closing: '+n,p.no);send(targets('store',p.site),`${uname(S.me)} wants to close ${p.no}: ${n}. Please okay or keep it open.`,'PO close');A.close();render();toast('Sent to storekeeper')};
+A.closeOk=id=>{const p=P(id);p.closeReq.status='ok';p.status='closed';p.closeNote=`Closed on request of ${uname(p.closeReq.by)}, okayed by ${uname(S.me)}: ${p.closeReq.reason}`;log('Okayed closing the PO',p.no);render();toast('PO closed')};
+A.closeNo=id=>{const p=P(id);p.closeReq.status='declined';log('Kept PO open (declined close request)',p.no);send([p.closeReq.by],`${p.no}: storekeeper wants to keep it open.`,'PO close');render();toast('PO kept open')};
+
+/* stock actions */
+A.scan=code=>{const c=code.trim().toUpperCase();const s=S.stock.find(x=>x.barcode===c&&x.site===stockSite());if(!s)return toast('No item here with barcode '+c);document.getElementById('scan').value='';if(me().role==='store')A.issue(s.id,'out');else A.label(s.id)};
+A.issue=(id,dir)=>{const s=S.stock.find(x=>x.id===id),out=dir==='out';modal(`<h2>${out?'Issue to production':'Return from production'}</h2><p class="muted small">${esc(s.name)} · in hand ${nf(s.qty)} ${esc(s.unit)}</p>
+  <div class="grid"><label>Quantity (${esc(s.unit)})<input id="is_q" type="number" inputmode="decimal" step="any"></label><label>Shift<select id="is_s"><option>Shift A</option><option>Shift B</option><option>Shift C</option></select></label></div>
+  <label>${out?'Issued to (person or line)':'Returned by (person or line)'}<input id="is_to" placeholder="e.g. Filling line 1"></label><p class="err" id="is_err"></p>
+  <div class="mact"><button class="btn" onclick="A.close()">Cancel</button><button class="btn primary" onclick="A.doIssue('${id}','${dir}')">${out?'Issue':'Return'}</button></div>`)};
+A.doIssue=(id,dir)=>{const s=S.stock.find(x=>x.id===id),q=+val('is_q'),out=dir==='out',who=val('is_to').trim()||'Production';
+  if(!(q>0)){document.getElementById('is_err').textContent='Enter a quantity.';return}
+  if(out&&q>s.qty){document.getElementById('is_err').textContent=`Only ${nf(s.qty)} ${s.unit} in hand.`;return}
+  move(s,out?'Issued':'Returned',out?-q:q,S.me,`${out?'To':'From'} ${who}, ${val('is_s')}`);log(`${out?'Issued':'Got back'} ${nf(q)} ${s.unit} ${s.name} ${out?'to':'from'} ${who}`,s.barcode);A.close();render();toast(out?'Issued':'Return recorded')};
+A.label=id=>{const s=S.stock.find(x=>x.id===id);modal(`<h2>Barcode label</h2><div class="labelcard"><b>${esc(s.name)}</b><svg id="bc"></svg><span class="small muted">${esc(site(s.site).name)}</span></div><p class="hint">The full version prints these on a label printer or an A4 sticker sheet.</p><div class="mact"><button class="btn" onclick="A.close()">Done</button></div>`);
+  try{JsBarcode('#bc',s.barcode,{height:50,fontSize:14,margin:4,lineColor:'#18201c'})}catch(e){document.getElementById('bc').outerHTML=`<span class="mono">${s.barcode}</span>`}};
+A.stockNew=()=>modal(`<h2>Add stock item</h2><div class="grid"><label class="span2">Item name<input id="sn_n"></label><label>Unit<select id="sn_u">${S.units.map(u=>`<option>${esc(u)}</option>`).join('')}</select></label><label>Opening quantity<input id="sn_q" type="number" inputmode="decimal" step="any" value="0"></label></div><div class="mact"><button class="btn" onclick="A.close()">Cancel</button><button class="btn primary" onclick="A.doStockNew()">Add</button></div>`);
+A.doStockNew=()=>{const n=val('sn_n').trim();if(!n)return toast('Add a name');const s=stockAdd(me().site,n,val('sn_u'),+val('sn_q')||0,'Opening stock',S.me,'Opening balance',guessCat(n,me().site)?.cat||'');log('Added stock item '+n,s.barcode);A.close();render();toast('Added with barcode '+s.barcode)};
+
+/* vendors */
+A.vendorNew=()=>modal(`<h2>Add vendor</h2><div class="grid"><label class="span2">Business name<input id="vn_n"></label><label>Contact person<input id="vn_c"></label><label>WhatsApp number<input id="vn_p" inputmode="tel"></label><label>Email (optional)<input id="vn_e" inputmode="email"></label><label>City<input id="vn_city"></label><label class="span2">GSTIN<input id="vn_g" maxlength="15" placeholder="15 characters, e.g. 19ABCDE1234F1Z5" style="text-transform:uppercase"></label><label class="span2">Supplies (categories)<input id="vn_cat" placeholder="e.g. Electrical, Plumbing and sanitary"></label></div><p class="err" id="vn_err"></p><div class="mact"><button class="btn" onclick="A.close()">Cancel</button><button class="btn primary" onclick="A.doVendor()">Save vendor</button></div>`);
+A.doVendor=()=>{const n=val('vn_n').trim(),g=val('vn_g').trim().toUpperCase();
+  if(!n){document.getElementById('vn_err').textContent='Add the business name.';return}
+  if(g&&!/^\d{2}[A-Z]{5}\d{4}[A-Z][1-9A-Z]Z[0-9A-Z]$/.test(g)){document.getElementById('vn_err').textContent='That GSTIN does not look right. It should be 15 characters, like 19ABCDE1234F1Z5.';return}
+  S.vendors.push({id:uid(),name:n,contact:val('vn_c').trim(),phone:val('vn_p').trim(),email:val('vn_e').trim(),gstin:g,city:val('vn_city').trim(),cats:val('vn_cat').trim()});log('Added vendor '+n);A.close();render();toast('Vendor added')};
+
+/* settings */
+A.siteAddr=el=>{site(el.dataset.s).address=el.value.trim();log('Updated site address for '+site(el.dataset.s).name);save();toast('Saved')};
+A.coField=(el,f)=>{S.companyInfo=S.companyInfo||{};const c=el.dataset.c;(S.companyInfo[c]=S.companyInfo[c]||{})[f]=f==='gstin'?el.value.trim().toUpperCase():el.value.trim();log(`Updated ${f==='gstin'?'GSTIN':'address'} of ${c}`);save();toast('Saved')};
+A.coName=el=>{const st=site(el.dataset.s),i=+el.dataset.i,old=st.companies[i],n=el.value.trim();if(!n||n===old)return;st.companies[i]=n;S.companyInfo=S.companyInfo||{};if(S.companyInfo[old]){S.companyInfo[n]=S.companyInfo[old];delete S.companyInfo[old]}S.pos.forEach(p=>{if(p.company===old)p.company=n});S.reqs.forEach(r=>{if(r.company===old)r.company=n});log(`Renamed billing company to ${n}`);render();toast('Saved')};
+A.deleg=()=>{const to=val('dg_to'),until=new Date(val('dg_until')+'T23:59').getTime();if(!(until>now()))return toast('Choose a date from today onwards');S.deleg[S.me]={to,until};log(`Handed approvals to ${uname(to)} until ${fmtD(until)}`);send([to],`${uname(S.me)} has handed you their approvals until ${fmtD(until)}.`,'Hand-over');render();toast('Approvals handed to '+uname(to))};
+A.delegOff=()=>{delete S.deleg[S.me];log('Took approvals back');render();toast('Approvals are back with you')};
+A.areaOk=b=>{const sc=b.dataset.s,n=b.dataset.n;(S.areas[sc]=S.areas[sc]||[]).push(n);log(`Approved quick-pick area "${n}" for ${site(sc).name}`);render();toast('Added as a quick pick')};
+A.areaNo=b=>{S.areaDismissed.push(b.dataset.s+'|'+b.dataset.n);render()};
+A.catDel=b=>{const k=b.dataset.k,c=b.dataset.c;S.cats[k]=S.cats[k].filter(x=>x!==c);log('Removed category '+c);render()};
+A.catAdd=k=>{const c=val('nc_'+k).trim();if(!c)return;if(!S.cats[k].includes(c))S.cats[k].push(c);log('Added category '+c);render();toast('Category added')};
+A.userNew=()=>modal(`<h2>Add person</h2><div class="grid"><label class="span2">Name<input id="un_n"></label><label>Mobile number<input id="un_m" inputmode="numeric" maxlength="10"></label><label>Role<select id="un_r" onchange="document.getElementById('un_sw').hidden=this.value!=='store'"><option value="store">Storekeeper</option><option value="pm">Procurement manager</option><option value="trio">Approver</option></select></label><label id="un_sw">Site<select id="un_s">${S.sites.map(s=>`<option value="${s.code}">${esc(s.name)}</option>`).join('')}</select></label></div><p class="hint">They log in with this mobile number, using a WhatsApp code or a password they set.</p><p class="err" id="un_err"></p><div class="mact"><button class="btn" onclick="A.close()">Cancel</button><button class="btn primary" onclick="A.doUser()">Add</button></div>`);
+A.doUser=()=>{const n=val('un_n').trim(),m=val('un_m').replace(/\D/g,''),r=val('un_r');if(!n||m.length!==10){document.getElementById('un_err').textContent='Add a name and a 10-digit mobile number.';return}if(S.users.some(u=>u.mobile===m)){document.getElementById('un_err').textContent='Someone already uses this number.';return}
+  S.users.push({id:uid(),name:n,mobile:m,role:r,site:r==='store'?val('un_s'):undefined,pass:'demo',pin:'1234'});log('Added person '+n);A.close();render();toast(n+' added')};
+
+if(!S||S.v!==4) S=seed();
+if(!S.items) buildMaster();
+if(!S.rateLists){S.rateLists=[];S.contractMap={}}
+if(!S.cats.mfg.includes('Grocery & Ration')){const oi=S.cats.mfg.indexOf('Others');S.cats.mfg.splice(oi<0?S.cats.mfg.length:oi,0,'Grocery & Ration')}
+window.addEventListener('keydown',e=>{if(e.key==='Escape')A.close()});
+render();
+</script>

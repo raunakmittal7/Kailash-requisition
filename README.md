@@ -15,10 +15,11 @@ The live website is the set of files at the top of this repository. Vercel serve
 
 People log in with their mobile number and a password. Inside Supabase the login name is `<mobile>@phone.kailasha.local`, and nothing is ever sent to that address. Raunak's account is created once in the SQL Editor with `add_person(...)`. After that, people are added from the website under Settings → People, which Raunak can do. Logging in with a WhatsApp code comes once AiSensy is connected.
 
-## Reading slips, quotations and price lists
+## Reading quotations and price lists
 
-Photos of handwritten slips, vendor quotations and price lists are read by Claude through the server function `api/read.js`.
-It only works for signed-in people, and the Anthropic API key stays on the server.
+Vendor quotations (for the comparison) and brand price lists are read by Claude Haiku through the server function `api/read.js`.
+Only the office team can use it; storekeepers type their items by hand. The Anthropic API key stays on the server.
+To use a different model, set `ANTHROPIC_MODEL` in Vercel.
 
 To switch it on: in Vercel, open the project, go to Settings, then Environment Variables, and add `ANTHROPIC_API_KEY`
 with a key from console.anthropic.com. Then redeploy. Until the key is added, the website says the reading is coming soon

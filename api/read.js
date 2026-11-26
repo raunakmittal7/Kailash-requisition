@@ -1,4 +1,5 @@
-// Reads handwritten slips, vendor quotations and price lists with Claude.
+// Reads vendor quotations and brand price lists with Claude, for the office team only
+// (storekeepers type their items by hand).
 // The Anthropic API key lives only on the server, as the Vercel environment
 // variable ANTHROPIC_API_KEY. The website never sees it.
 //
@@ -10,7 +11,8 @@ const Anthropic = require('@anthropic-ai/sdk');
 
 const SUPABASE_URL = process.env.SUPABASE_URL || 'https://sptzqdmxrctnlloxjgeq.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_3giQunKA0R5rokf5bPtE_A_BFbh670V'; // public by design
-const MODEL = 'claude-opus-5-5';
+// Which Claude model reads the files. Set ANTHROPIC_MODEL in Vercel to change it without a code change.
+const MODEL = process.env.ANTHROPIC_MODEL || 'claude-haiku-5-5';
 const MAX_IMAGES = 5;
 const IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
 
@@ -50,6 +52,7 @@ module.exports = async (req, res) => {
   let role = null;
   try { role = await signedInRole(token); } catch { role = null; }
   if (!role) return send(res, 401, { error: 'not_granted' });
+  if (role === 'store') return send(res, 403, { error: 'not_granted' });
 
   let body = req.body;
   if (typeof body === 'string') { try { body = JSON.parse(body); } catch { body = null; } }
@@ -69,11 +72,12 @@ module.exports = async (req, res) => {
 
   const client = new Anthropic();
   try {
+    // Server-side refusal fallback exists for Opus and Sonnet, not for Haiku.
+    const fallback = /haiku/.test(MODEL) ? {} : { betas: ['server-side-fallback-2026-07-01'], fallbacks: 'default' };
     const msg = await client.beta.messages.create({
       model: MODEL,
       max_tokens: 16000,
-      betas: ['server-side-fallback-2026-07-01'],
-      fallbacks: 'default',
+      ...fallback,
       messages: [{ role: 'user', content }],
     });
     if (msg.stop_reason === 'refusal') return send(res, 422, { error: 'image_rejected' });
